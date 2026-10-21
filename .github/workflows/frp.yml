@@ -9,6 +9,9 @@ on:
     paths:
       - '.github/workflows/frp.yml'
       - 'frp/**'
+      - '!frp/**/*.md'
+      - '!frp/**/README*'
+      - '!frp/docs/**'
 
 permissions: {}
 

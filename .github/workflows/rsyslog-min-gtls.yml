@@ -8,6 +8,9 @@ name: Build rsyslog-min-gtls images
     - main
     paths:
     - rsyslog-min-gtls/**
+    - '!rsyslog-min-gtls/**/*.md'
+    - '!rsyslog-min-gtls/**/README*'
+    - '!rsyslog-min-gtls/docs/**'
     - .github/workflows/rsyslog-min-gtls.yml
 permissions:
   contents: read

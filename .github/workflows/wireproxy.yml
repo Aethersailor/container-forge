@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'wireproxy/**'
+      - '!wireproxy/**/*.md'
+      - '!wireproxy/**/README*'
+      - '!wireproxy/docs/**'
       - '.github/workflows/wireproxy.yml'
   schedule:
     - cron: '43 3 * * *'
@@ -92,8 +95,14 @@ jobs:
         run: |
           set -euo pipefail
           for image in "$GHCR_IMAGE" "$DOCKERHUB_IMAGE"; do
-            digest="$(docker buildx imagetools inspect "${image}:latest" | awk '$1 == "Digest:" { print $2; exit }')"
-            test "$digest" = "$EXPECTED_DIGEST"
+            manifest="$(docker buildx imagetools inspect "${image}:latest" --format '{{json .Manifest}}')"
+            digest="$(jq -er '.digest' <<< "$manifest")"
+            if [[ "$digest" != "$EXPECTED_DIGEST" ]]; then
+              printf 'Digest mismatch for %s: expected %s, got %s\n' \
+                "${image}:latest" "$EXPECTED_DIGEST" "$digest" >&2
+              exit 1
+            fi
+            printf '%s digest verified: %s\n' "${image}:latest" "$digest"
           done
           {
             echo '### wireproxy latest'

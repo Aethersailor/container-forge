@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'mihomo/**'
+      - '!mihomo/**/*.md'
+      - '!mihomo/**/README*'
+      - '!mihomo/docs/**'
       - '.github/workflows/mihomo.yml'
   schedule:
     - cron: '17,47 * * * *'
