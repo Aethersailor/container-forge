@@ -1,0 +1,35 @@
+name: Transfer existing publishing secrets
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  transfer:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install encryption library
+        run: python3 -m pip install --quiet PyNaCl
+      - name: Encrypt for container-forge
+        env:
+          MIHOMO_DOCKERHUB_TOKEN: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          MIHOMO_DOCKERHUB_USERNAME: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
+          TRANSFER: '[{"app": "actions", "source": "MIHOMO_DOCKERHUB_USERNAME", "name": "DOCKERHUB_USERNAME", "key_id": "3380204578043523366", "key": "SRGYjCShWEmeWXYlEznluiLmo6V07ETB9II8/vpw7B4="}, {"app": "actions", "source": "MIHOMO_DOCKERHUB_TOKEN", "name": "DOCKERHUB_TOKEN", "key_id": "3380204578043523366", "key": "SRGYjCShWEmeWXYlEznluiLmo6V07ETB9II8/vpw7B4="}]'
+        run: |
+          python3 - <<'PY'
+          import base64, json, os
+          from pathlib import Path
+          from nacl.public import PublicKey, SealedBox
+          output = []
+          for item in json.loads(os.environ['TRANSFER']):
+              value = os.environ[item['source']]
+              if not value:
+                  raise RuntimeError('Missing source secret: ' + item['source'])
+              box = SealedBox(PublicKey(base64.b64decode(item['key'])))
+              output.append({'app': item['app'], 'name': item['name'], 'key_id': item['key_id'], 'encrypted_value': base64.b64encode(box.encrypt(value.encode())).decode()})
+          Path('encrypted-secrets.json').write_text(json.dumps(output))
+          print('Encrypted', len(output), 'values for the destination repository.')
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: container-forge-encrypted-secrets
+          path: encrypted-secrets.json
+          retention-days: 1
