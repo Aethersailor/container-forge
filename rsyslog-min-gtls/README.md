@@ -45,7 +45,7 @@ docker run --rm \
 
 ### 上游跟踪与 CI
 - 工作流始终解析 rsyslog 最新 v8 tag。
-- 定时任务每天检测一次：如无更新则跳过编译；如有更新则编译并推送 GHCR 和 Docker Hub。
+- 定时任务每天北京时间 10:23 完整重建，拉取最新基础镜像并禁用构建缓存，以获取基础镜像和系统包更新；rsyslog 上游版本号不变时也会重新发布。实际执行时间可能延迟。
 - 两个镜像仓库都保留 `v8.x.y` 版本标签；`latest` 始终指向最高版本号。发布流程不会生成 SHA、分支名或无标签的附加镜像。
 - Dependabot 由仓库统一配置，自动合并依赖更新，不增加测试、扫描或人工审批。
 - 成功发布新上游版本后，工作流只写回本工程的 `UPSTREAM_VERSION`。
@@ -99,7 +99,7 @@ docker run --rm \
 
 ### Upstream tracking & CI
 - Workflow always resolves the latest rsyslog v8 tag.
-- Scheduled runs check daily: skip if unchanged; build and push to GHCR and Docker Hub if updated.
+- Scheduled runs rebuild daily at 02:23 UTC (10:23 Asia/Shanghai), pulling the latest base images with the build cache disabled to refresh base images and system packages. Images are published even when the upstream rsyslog version is unchanged. Scheduled execution may be delayed.
 - Both registries retain `v8.x.y` version tags, while `latest` always points to the highest version. The publication workflow does not create SHA, branch, or untagged auxiliary images.
 - Dependabot is configured at repository level and merges dependency updates automatically, without tests, scans, or manual approval.
 - After a new upstream version is published successfully, the workflow updates this project's `UPSTREAM_VERSION`.

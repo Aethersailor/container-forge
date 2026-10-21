@@ -51,40 +51,21 @@ jobs:
           exit 1
         fi
         echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
-    - name: Decide whether to publish
-      id: decide
-      shell: bash
-      env:
-        LATEST_TAG: ${{ steps.upstream.outputs.latest_tag }}
-      run: |
-        set -euo pipefail
-        needs_build=true
-        if [[ "${{ github.event_name }}" == "schedule" ]]; then
-          current="$(tr -d ' \r\n\t' < UPSTREAM_VERSION 2>/dev/null || true)"
-          if [[ "$LATEST_TAG" == "$current" ]]; then
-            needs_build=false
-          fi
-        fi
-        echo "needs_build=$needs_build" >> "$GITHUB_OUTPUT"
     - name: Set up Docker Buildx
-      if: steps.decide.outputs.needs_build == 'true'
       uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
     - name: Log in to GHCR
-      if: steps.decide.outputs.needs_build == 'true'
       uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Log in to Docker Hub
-      if: steps.decide.outputs.needs_build == 'true'
       uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Prepare image tags
       id: tags
-      if: steps.decide.outputs.needs_build == 'true'
       shell: bash
       env:
         RSYSLOG_REF: ${{ steps.upstream.outputs.latest_tag }}
@@ -98,11 +79,12 @@ jobs:
         echo "EOF" >> "$GITHUB_OUTPUT"
     - name: Build and push image
       id: build
-      if: steps.decide.outputs.needs_build == 'true'
       uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
       with:
         context: ./rsyslog-min-gtls
         push: true
+        pull: true
+        no-cache: true
         platforms: linux/amd64
         tags: |
           ${{ steps.tags.outputs.tags }}
@@ -116,10 +98,7 @@ jobs:
           org.opencontainers.image.version=${{ steps.upstream.outputs.latest_tag }}
         provenance: false
         sbom: false
-        cache-from: type=gha,scope=rsyslog-min-gtls-publish
-        cache-to: type=gha,mode=max,scope=rsyslog-min-gtls-publish
     - name: Verify published image digests
-      if: steps.decide.outputs.needs_build == 'true'
       shell: bash
       env:
         EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
@@ -154,7 +133,6 @@ jobs:
           fi
         done
     - name: Clean and verify container registries
-      if: steps.decide.outputs.needs_build == 'true'
       shell: bash
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -165,7 +143,6 @@ jobs:
           'aethersailor' \
           'rsyslog-min-gtls'
     - name: Record upstream version
-      if: steps.decide.outputs.needs_build == 'true'
       shell: bash
       env:
         RSYSLOG_REF: ${{ steps.upstream.outputs.latest_tag }}
@@ -180,7 +157,3 @@ jobs:
         git add UPSTREAM_VERSION
         git commit -m "chore(upstream): bump rsyslog to $RSYSLOG_REF"
         git push origin HEAD:main
-    - name: Skip unchanged upstream
-      if: steps.decide.outputs.needs_build != 'true'
-      shell: bash
-      run: echo "Upstream unchanged; skipping image publication."
