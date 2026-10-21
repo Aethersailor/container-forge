@@ -1,0 +1,104 @@
+name: Sync mihomo images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mihomo/**'
+      - '.github/workflows/mihomo.yml'
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Upstream channel
+        type: choice
+        options: [both, release, alpha]
+        default: both
+      force:
+        description: Rebuild even when upstream is unchanged
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Image addresses are stable even when the GitHub repository is renamed.
+env:
+  GHCR_IMAGE: ghcr.io/aethersailor/mihomo
+  DOCKERHUB_IMAGE: docker.io/aethersailor/mihomo
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mihomo
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [release, alpha]
+    concurrency:
+      group: mihomo-publish-${{ matrix.channel }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set image names
+        id: config
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          REQUESTED_CHANNEL: ${{ inputs.channel || 'both' }}
+          CHANNEL: ${{ matrix.channel }}
+        run: |
+          if [[ "$REQUESTED_CHANNEL" != both && "$REQUESTED_CHANNEL" != "$CHANNEL" ]]; then
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          test -n "$DOCKERHUB_USERNAME" && test -n "$DOCKERHUB_TOKEN" || {
+            echo '::error::Configure MIHOMO_DOCKERHUB_USERNAME and MIHOMO_DOCKERHUB_TOKEN in repository Actions secrets.'
+            exit 1
+          }
+          echo 'enabled=true' >> "$GITHUB_OUTPUT"
+      - name: Login to GHCR
+        if: steps.config.outputs.enabled == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Docker Hub
+        if: steps.config.outputs.enabled == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          username: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+      - name: Setup QEMU
+        if: steps.config.outputs.enabled == 'true'
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        with:
+          platforms: arm,arm64
+      - name: Setup Buildx
+        if: steps.config.outputs.enabled == 'true'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Package and publish official binaries
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_SYNC: ${{ inputs.force || 'false' }}
+          CHANNEL: ${{ matrix.channel }}
+        run: python3 scripts/sync.py --channel "$CHANNEL"
+      - name: Reconcile withdrawn upstream releases
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DOCKERHUB_USERNAME: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          CHANNEL: ${{ matrix.channel }}
+        run: python3 scripts/reconcile.py --channel "$CHANNEL"

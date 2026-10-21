@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: '04:20'
+      timezone: Asia/Shanghai
+    rebase-strategy: auto
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
+  - package-ecosystem: docker
+    directory: /mihomo
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      include: scope

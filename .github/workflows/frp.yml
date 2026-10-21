@@ -1,0 +1,68 @@
+name: Sync official FRP images
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/frp.yml'
+      - 'frp/**'
+
+permissions: {}
+
+concurrency:
+  group: official-frp-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frp
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned regctl
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 \
+            https://github.com/regclient/regclient/releases/download/v0.11.7/regctl-linux-amd64 \
+            -o "$RUNNER_TEMP/regctl"
+          echo '3737fbbdd791e04e7a831640b681f3397a376498e80e2ad9b1b2d27296f239bc  '"$RUNNER_TEMP/regctl" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/regctl"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Copy official images and reconcile tags
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GHCR_NAMESPACE: aethersailor
+          DOCKERHUB_USERNAME: ${{ secrets.FRP_DOCKERHUB_USERNAME || 'aethersailor' }}
+          DOCKERHUB_NAMESPACE: aethersailor
+          DOCKERHUB_TOKEN: ${{ secrets.FRP_DOCKERHUB_TOKEN }}
+          REGCTL_CONFIG: ${{ runner.temp }}/regctl-config.json
+          EVIDENCE_DIR: ${{ runner.temp }}/evidence
+        run: |
+          set -euo pipefail
+          test -n "$DOCKERHUB_TOKEN" || { echo 'Configure the FRP_DOCKERHUB_TOKEN repository secret before publishing'; exit 1; }
+          export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME,,}"
+          trap 'rm -f "$REGCTL_CONFIG"' EXIT
+          printf '%s' "$GH_TOKEN" | regctl registry login ghcr.io --user "$GITHUB_ACTOR" --pass-stdin
+          printf '%s' "$DOCKERHUB_TOKEN" | regctl registry login docker.io --user "$DOCKERHUB_USERNAME" --pass-stdin
+          python3 scripts/sync.py
+      - name: Save digest evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frp-digest-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/evidence
+          if-no-files-found: ignore
+          retention-days: 90
