@@ -1,8 +1,8 @@
-# rsyslog-min-gtls
+# 📜 rsyslog-min-gtls
 
 用于接收网络日志的精简 [rsyslog](https://github.com/rsyslog/rsyslog) 容器镜像，基于 Debian stable-slim，内置 GnuTLS。适合集中接收 TCP/UDP syslog 日志，或配合自备配置与证书使用 TLS/mTLS。
 
-[返回镜像目录](../#镜像目录)
+[⬅️ 返回镜像目录](../#镜像目录)
 
 ## 与官方镜像的区别
 

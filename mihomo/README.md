@@ -1,17 +1,17 @@
-# mihomo
+# 🌐 mihomo
 
 [mihomo](https://github.com/MetaCubeX/mihomo) 是支持多种代理协议和规则路由的代理核心。本目录提供社区维护的容器镜像，适合通过 Docker 部署 mihomo，或需要 amd64 不同指令等级镜像的用户。
 
-[返回镜像目录](../#镜像目录)
+[⬅️ 返回镜像目录](../#镜像目录)
 
 ## 与官方镜像的区别
 
-上游已提供官方镜像 [`metacubex/mihomo`](https://hub.docker.com/r/metacubex/mihomo)。按当前上游的[平台选择脚本](https://github.com/MetaCubeX/mihomo/blob/Meta/docker/file-name.sh)，官方 amd64 镜像使用 `amd64-v1` 二进制。
+上游已提供官方镜像 [`metacubex/mihomo`](https://hub.docker.com/r/metacubex/mihomo)。按当前上游的[平台选择脚本](https://github.com/MetaCubeX/mihomo/blob/Meta/docker/file-name.sh)，官方在 amd64 平台仅提供 v1 指令等级的镜像。
 
 本仓库主要补充以下打包与分发选项：
 
 - 直接打包官方正式版和 Alpha 的未修改二进制，不修改或重新编译核心。
-- 在官方 amd64 v1 的基础上，提供 v2/v3 的选择和固定指令等级标签；同时保留 386、arm64、arm/v7 镜像。
+- `latest` 同时包含 amd64 v1/v2/v3，支持指令等级匹配的 Docker 会自动选择 CPU 支持的最高等级，无需手动选择；同时保留 386、arm64、arm/v7 镜像。
 - 除 Docker Hub 外提供 GHCR 地址，并每天重建以刷新基础镜像和系统包。
 - 配置目录和启动参数沿用官方镜像，已有容器部署可替换镜像地址。
 
@@ -30,11 +30,13 @@
 
 | 标签 | 用途 |
 | --- | --- |
-| `latest` | 最新正式版，常规部署使用此标签 |
+| `latest` | 最新正式版，自动匹配 CPU 支持的最高 amd64 指令等级，常规部署使用此标签 |
 | `v1.x.x` | 指定已同步的正式版；将占位版本号替换为镜像仓库中实际存在的标签 |
 | `Alpha` | 最新 Alpha 开发版本，注意大写 `A` |
 
-支持自动匹配指令等级的 Docker 会选择 CPU 能运行的最高 amd64 等级。旧版 Docker 或需要固定等级时，可使用 `latest-amd64-v1`、`latest-amd64-v2`、`latest-amd64-v3`；`Alpha` 和版本标签也提供对应后缀，例如 `Alpha-amd64-v2`。所选等级须由 CPU 支持。
+> 💡 常规部署直接使用 `latest` 即可，由支持指令等级匹配的 Docker 自动选择 CPU 能运行的最高 amd64 等级，无需手动填写 v1、v2 或 v3。`Alpha` 和版本标签也采用相同的多平台组织方式。
+
+旧版 Docker 不支持该匹配机制，或需要固定等级时，可使用 `latest-amd64-v1`、`latest-amd64-v2`、`latest-amd64-v3`；`Alpha` 和版本标签也提供对应后缀，例如 `Alpha-amd64-v2`。所选等级须由 CPU 支持。
 
 版本标签也可能随基础镜像刷新而更新；需要固定镜像内容时，使用对应镜像仓库中的 digest。
 

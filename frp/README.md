@@ -1,17 +1,19 @@
-# FRP · 内网穿透镜像
+# 🔌 FRP · 内网穿透镜像
 
 [FRP](https://github.com/fatedier/frp) 用于通过具有公网地址的服务端访问内网服务。本目录为官方 frpc、frps 容器镜像提供社区分发地址和 `latest` 标签，适合使用 Docker 部署客户端、服务端或更新已有部署。
 
-[返回镜像目录](../#镜像目录)
+[⬅️ 返回镜像目录](../#镜像目录)
 
 ## 与官方镜像的区别
 
 上游已在 Docker Hub 发布 [`fatedier/frpc`](https://hub.docker.com/r/fatedier/frpc)、[`fatedier/frps`](https://hub.docker.com/r/fatedier/frps)，并在 GHCR 发布 `ghcr.io/fatedier/frpc`、`ghcr.io/fatedier/frps`。官方[发布工作流](https://github.com/fatedier/frp/blob/dev/.github/workflows/build-and-push-image.yml)按版本号打标签，目前未提供 `latest`。
 
+> 💡 Watchtower 按容器配置的镜像标签检查更新。固定版本标签不会在新正式版发布后自动切换到新版本，使用官方镜像跟随新版仍需自行调整标签。本仓库维护滚动的 `latest`，便于配合 Watchtower 自动更新容器。
+
 本仓库的区别集中在标签与分发：
 
 - 从官方 GHCR 按 digest 原样复制，保留镜像内容及完整多架构清单，不重新构建或修改 FRP。
-- 维护跟随当前可用官方正式版的 `latest` 标签，方便按需拉取更新或配合自动更新工具使用。
+- 维护跟随当前可用官方正式版的 `latest` 标签，方便手动更新或配合 Watchtower 自动更新容器。
 - 提供 `aethersailor` 命名空间下的 Docker Hub 和 GHCR 地址，并跟随官方同版本重发及版本撤回。
 
 本镜像没有额外的协议、配置项或性能补丁。需要滚动的 `latest` 标签时可使用本仓库；需要官方来源的指定版本时，可直接使用官方版本标签。原样同步仍有检查间隔，不保证与官方同时更新。

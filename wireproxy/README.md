@@ -1,10 +1,10 @@
-# wireproxy
+# 🔐 wireproxy
 
 [wireproxy](https://github.com/windtf/wireproxy) 是用户态 WireGuard 客户端，可将 WireGuard 连接提供为 SOCKS5、HTTP 代理或隧道，适合让指定应用经 WireGuard 出站，无需为宿主机创建 TUN 网络接口。
 
 本目录提供带队列扩容和 Landlock 补丁的社区镜像，跟随上游 `master` 开发分支构建，与上游项目无隶属关系。
 
-[返回镜像目录](../#镜像目录)
+[⬅️ 返回镜像目录](../#镜像目录)
 
 ## 与官方镜像的区别
 
