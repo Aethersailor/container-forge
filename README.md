@@ -42,19 +42,22 @@ GitHub Actions 要求工作流入口放在 `.github/workflows/`。`mihomo.yml` �
 
 1. 在仓库根目录创建软件目录，放入独立的打包或同步文件及 README。
 2. 在 `.github/workflows/` 添加对应工作流，只监听自身工程目录和该工作流文件。
-3. 明确配置镜像地址、凭据名称及更新周期，为并发组、缓存和工作流产物使用工程前缀。
+3. 明确配置镜像地址及更新周期，为并发组、缓存和工作流产物使用工程前缀；发布凭据使用仓库统一配置。
 4. 按需在 `.github/dependabot.yml` 增加该工程的依赖更新配置，并更新首页镜像目录。
 
 发布地址不从本仓库名称推导。迁入本仓库不改变现有镜像地址和标签。
 
 ## 维护配置
 
-| 工程 | Actions Secrets |
+| 用途 | Actions Secrets |
 | --- | --- |
-| mihomo | `MIHOMO_DOCKERHUB_USERNAME`、`MIHOMO_DOCKERHUB_TOKEN` |
-| FRP | `FRP_DOCKERHUB_TOKEN`；可选 `FRP_DOCKERHUB_USERNAME`，默认 `aethersailor` |
+| 所有工程的 Docker Hub 发布 | `DOCKERHUB_USERNAME`、`DOCKERHUB_TOKEN` |
 | Dependabot 自动合并 | `DEPENDABOT_MERGE_TOKEN`，同时配置到 Actions 和 Dependabot Secrets |
 
-GHCR 发布使用 `GITHUB_TOKEN`，现有镜像包需要允许本仓库的 Actions 写入。FRP 的 Docker Hub 命名空间固定为 `aethersailor`；mihomo 的两个镜像地址在自身工作流中明确指定。
+Docker Hub 使用账号级个人访问令牌，授予 Read、Write、Delete 权限，覆盖该账号可访问的镜像仓库。所有工程共用这一份凭据，新增工程无需单独创建 Token。
+
+GHCR 发布使用 GitHub 自动生成的 `GITHUB_TOKEN` 和 `packages: write` 权限。新镜像包由对应工作流创建；接管已有镜像包时，为本仓库授予包管理权限，以支持发布及撤回版本。Dependabot 自动合并 Token 覆盖本仓库内所有工程。
+
+各工程自行指定镜像地址。FRP 的 Docker Hub 命名空间固定为 `aethersailor`；mihomo 的两个镜像地址在自身工作流中明确指定。
 
 各工程保留各自的许可证及上游声明；`mihomo/LICENSE` 适用于 mihomo 工程。迁移来源为 [m-core-docker](https://github.com/Aethersailor/m-core-docker) 和 [frp-image-sync](https://github.com/Aethersailor/frp-image-sync)。

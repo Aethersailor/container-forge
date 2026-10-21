@@ -45,14 +45,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GHCR_NAMESPACE: aethersailor
-          DOCKERHUB_USERNAME: ${{ secrets.FRP_DOCKERHUB_USERNAME || 'aethersailor' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME || 'aethersailor' }}
           DOCKERHUB_NAMESPACE: aethersailor
-          DOCKERHUB_TOKEN: ${{ secrets.FRP_DOCKERHUB_TOKEN }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           REGCTL_CONFIG: ${{ runner.temp }}/regctl-config.json
           EVIDENCE_DIR: ${{ runner.temp }}/evidence
         run: |
           set -euo pipefail
-          test -n "$DOCKERHUB_TOKEN" || { echo 'Configure the FRP_DOCKERHUB_TOKEN repository secret before publishing'; exit 1; }
+          test -n "$DOCKERHUB_TOKEN" || { echo 'Configure the DOCKERHUB_TOKEN repository secret before publishing'; exit 1; }
           export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME,,}"
           trap 'rm -f "$REGCTL_CONFIG"' EXIT
           printf '%s' "$GH_TOKEN" | regctl registry login ghcr.io --user "$GITHUB_ACTOR" --pass-stdin

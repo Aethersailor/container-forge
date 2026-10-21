@@ -52,8 +52,8 @@ jobs:
       - name: Set image names
         id: config
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           REQUESTED_CHANNEL: ${{ inputs.channel || 'both' }}
           CHANNEL: ${{ matrix.channel }}
         run: |
@@ -62,7 +62,7 @@ jobs:
             exit 0
           fi
           test -n "$DOCKERHUB_USERNAME" && test -n "$DOCKERHUB_TOKEN" || {
-            echo '::error::Configure MIHOMO_DOCKERHUB_USERNAME and MIHOMO_DOCKERHUB_TOKEN in repository Actions secrets.'
+            echo '::error::Configure DOCKERHUB_USERNAME and DOCKERHUB_TOKEN in repository Actions secrets.'
             exit 1
           }
           echo 'enabled=true' >> "$GITHUB_OUTPUT"
@@ -77,8 +77,8 @@ jobs:
         if: steps.config.outputs.enabled == 'true'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
-          username: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
-          password: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Setup QEMU
         if: steps.config.outputs.enabled == 'true'
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
@@ -98,7 +98,7 @@ jobs:
         if: steps.config.outputs.enabled == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          DOCKERHUB_USERNAME: ${{ secrets.MIHOMO_DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.MIHOMO_DOCKERHUB_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           CHANNEL: ${{ matrix.channel }}
         run: python3 scripts/reconcile.py --channel "$CHANNEL"
