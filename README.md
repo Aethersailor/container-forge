@@ -4,6 +4,8 @@
 
 Independent container image packaging and distribution for upstream projects.
 
+维护和新增工程的约定见 [AGENTS.md](AGENTS.md)。
+
 ## 镜像目录
 
 | 工程 | 用途 | Docker Hub | GHCR | 自动更新 |
