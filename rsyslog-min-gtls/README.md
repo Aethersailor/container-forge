@@ -4,12 +4,24 @@
 
 [返回镜像目录](../#镜像目录)
 
-## 镜像特点
+## 与官方镜像的区别
 
-- 从 rsyslog v8 源码编译，运行镜像仅保留 rsyslogd、所需模块及运行库。
-- 默认监听 TCP/UDP 1514，将收到的日志输出到 stdout，可通过容器日志查看。
-- 内置 GnuTLS 网络流驱动，可配置 TLS 加密和双向证书认证。
-- 提供 `linux/amd64` 镜像，同时发布到 Docker Hub 和 GHCR。
+上游已提供[官方镜像系列](https://docs.rsyslog.com/doc/containers/user_images.html)，包括 [`rsyslog/rsyslog`](https://hub.docker.com/r/rsyslog/rsyslog)、[`rsyslog/rsyslog-minimal`](https://hub.docker.com/r/rsyslog/rsyslog-minimal) 和 [`rsyslog/rsyslog-collector`](https://hub.docker.com/r/rsyslog/rsyslog-collector)。官方 collector 同样支持可选的 TLS 接收。
+
+本仓库提供独立编译的精简版本，主要区别如下：
+
+| 项目 | 官方镜像系列 | 本镜像 |
+| --- | --- | --- |
+| 基础与安装方式 | 基于 Ubuntu LTS，从 Adiscon PPA 安装 rsyslog 软件包 | 基于 Debian stable-slim，从 rsyslog v8 源码编译 |
+| 模块范围 | 按 minimal、standard、collector 等用途提供不同模块组合 | 仅复制网络日志输入和 GnuTLS 等所需模块，清单见下文 |
+| 日志接收默认值 | collector 默认使用 TCP/UDP 514，并写入日志文件 | 默认使用 TCP/UDP 1514，并输出到 stdout |
+| 配置方式 | collector 提供 `ENABLE_TCP`、`ENABLE_UDP`、`ENABLE_TLS` 等开关 | 挂载自己的 `/etc/rsyslog.conf`；不提供这些环境变量开关 |
+
+官方 collector 的默认行为见[官方说明](https://docs.rsyslog.com/doc/containers/collector.html)。迁移时需核对模块、端口和配置方式，不能直接沿用全部官方启动配置。
+
+需要精简的 TCP/UDP 日志接收和 GnuTLS 模块组合时，可选择本镜像；需要 RELP、Kafka 等更多模块或官方预设的环境变量配置方式时，可选择相应的官方镜像。TLS/mTLS 两者均可配置，主要差异在基础镜像、模块范围和默认配置。
+
+本镜像提供 `linux/amd64` 架构，同时发布到 Docker Hub 和 GHCR。
 
 本镜像由社区独立维护，与 rsyslog 上游项目无隶属关系。精简镜像不包含 rsyslog 的全部可选模块，使用自定义配置前请核对下方模块清单。
 

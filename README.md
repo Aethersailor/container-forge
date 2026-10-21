@@ -6,7 +6,7 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 
 本仓库由社区独立维护，与上游项目无隶属关系。各镜像的来源、标签和使用方式见下文。
 
-[镜像目录](#镜像目录) · [快速开始](#快速开始) · [标签与架构](#标签与架构) · [镜像更新](#镜像更新) · [问题反馈](#问题反馈)
+[镜像目录](#镜像目录) · [与官方镜像的区别](#与官方镜像的区别) · [快速开始](#快速开始) · [标签与架构](#标签与架构) · [镜像更新](#镜像更新) · [问题反馈](#问题反馈)
 
 ## 镜像目录
 
@@ -19,6 +19,19 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 | [FRP 服务端 frps](frp/) | 内网穿透服务端；原样同步官方镜像，提供 `latest` 标签 | [`aethersailor/frps`](https://hub.docker.com/r/aethersailor/frps) | [`ghcr.io/aethersailor/frps`](https://github.com/users/Aethersailor/packages/container/package/frps) |
 | [rsyslog-min-gtls](rsyslog-min-gtls/) | 精简日志接收服务；内置 GnuTLS，支持配置 TLS/mTLS | [`aethersailor/rsyslog-min-gtls`](https://hub.docker.com/r/aethersailor/rsyslog-min-gtls) | [`ghcr.io/aethersailor/rsyslog-min-gtls`](https://github.com/users/Aethersailor/packages/container/package/rsyslog-min-gtls) |
 | [wireproxy](wireproxy/) | 用户态 WireGuard 代理；构建上游开发分支，包含队列扩容和 Landlock 补丁 | [`aethersailor/wireproxy`](https://hub.docker.com/r/aethersailor/wireproxy) | [`ghcr.io/aethersailor/wireproxy`](https://github.com/users/Aethersailor/packages/container/package/wireproxy) |
+
+## 与官方镜像的区别
+
+当前收录的四个软件均已有上游官方镜像。本仓库分别提供额外的打包选项、标签维护或功能裁剪；选择前可先对照自己的需求。
+
+| 软件 | 官方镜像 | 本仓库提供的区别 |
+| --- | --- | --- |
+| [mihomo](mihomo/#与官方镜像的区别) | 已有：[`metacubex/mihomo`](https://hub.docker.com/r/metacubex/mihomo) | 官方当前的 amd64 镜像使用 v1 二进制；本仓库打包未修改的官方二进制，提供 amd64 v1/v2/v3 选择、GHCR 分发和每日基础镜像刷新，核心功能不作改动 |
+| [FRP（frpc / frps）](frp/#与官方镜像的区别) | 已有：Docker Hub 的 [`fatedier/frpc`](https://hub.docker.com/r/fatedier/frpc)、[`fatedier/frps`](https://hub.docker.com/r/fatedier/frps)，以及官方 GHCR 地址 | 从官方 GHCR 原样同步，保留镜像内容和多架构清单，主要增加跟随正式版的 `latest` 标签及社区分发地址；没有额外的 FRP 功能 |
+| [rsyslog-min-gtls](rsyslog-min-gtls/#与官方镜像的区别) | 已有：[`rsyslog/rsyslog`](https://hub.docker.com/r/rsyslog/rsyslog)、[`rsyslog/rsyslog-minimal`](https://hub.docker.com/r/rsyslog/rsyslog-minimal)、[`rsyslog/rsyslog-collector`](https://hub.docker.com/r/rsyslog/rsyslog-collector) 等 | 采用 Debian stable-slim 和源码编译，仅保留网络日志及 GnuTLS 所需模块，默认 TCP/UDP 1514 → stdout；官方 collector 也支持 TLS，本镜像侧重精简配置和模块范围 |
+| [wireproxy](wireproxy/#与官方镜像的区别) | 已有：[`ghcr.io/windtf/wireproxy`](https://github.com/windtf/wireproxy/pkgs/container/wireproxy) | 在上游 `master` 基础上应用队列扩容和 Landlock 补丁，使用 Alpine 运行镜像，提供 Docker Hub 分发和每日重建；属于带补丁的构建 |
+
+需要官方原始构建时，可直接使用官方镜像；需要表中的具体差异时，再选择本仓库镜像。官方来源、详细差异及使用条件见各软件 README。
 
 ## 快速开始
 

@@ -4,14 +4,19 @@
 
 [返回镜像目录](../#镜像目录)
 
-## 镜像特点
+## 与官方镜像的区别
 
-- 从官方 GHCR 原样同步镜像，不重新构建或修改内容。
-- 保留官方完整的多架构清单，具体平台以所选标签为准。
-- 为 frpc 和 frps 提供跟随官方正式版的 `latest` 标签。
-- 同时分发到 Docker Hub 和 GHCR，镜像内容与对应官方版本一致。
+上游已在 Docker Hub 发布 [`fatedier/frpc`](https://hub.docker.com/r/fatedier/frpc)、[`fatedier/frps`](https://hub.docker.com/r/fatedier/frps)，并在 GHCR 发布 `ghcr.io/fatedier/frpc`、`ghcr.io/fatedier/frps`。官方[发布工作流](https://github.com/fatedier/frp/blob/dev/.github/workflows/build-and-push-image.yml)按版本号打标签，目前未提供 `latest`。
 
-本镜像由社区独立维护，`latest` 标签由本仓库提供，与 FRP 上游项目无隶属关系。
+本仓库的区别集中在标签与分发：
+
+- 从官方 GHCR 按 digest 原样复制，保留镜像内容及完整多架构清单，不重新构建或修改 FRP。
+- 维护跟随当前可用官方正式版的 `latest` 标签，方便按需拉取更新或配合自动更新工具使用。
+- 提供 `aethersailor` 命名空间下的 Docker Hub 和 GHCR 地址，并跟随官方同版本重发及版本撤回。
+
+本镜像没有额外的协议、配置项或性能补丁。需要滚动的 `latest` 标签时可使用本仓库；需要官方来源的指定版本时，可直接使用官方版本标签。原样同步仍有检查间隔，不保证与官方同时更新。
+
+本镜像由社区独立维护，与 FRP 上游项目无隶属关系。
 
 ## 镜像地址与标签
 

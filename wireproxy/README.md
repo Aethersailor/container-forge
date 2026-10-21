@@ -6,12 +6,20 @@
 
 [返回镜像目录](../#镜像目录)
 
-## 镜像特点
+## 与官方镜像的区别
 
-- 提供 `linux/amd64` 和 `linux/arm64` 镜像，同时发布到 Docker Hub 和 GHCR。
-- 以非 root 用户 `65532:65532` 运行，纯用户态代理不需要 `/dev/net/tun`、`privileged` 或 `NET_ADMIN`。
-- 扩大 WireGuard 和用户态网络栈的指定队列，保留原有握手 Cookie 防护阈值。
-- 为 Landlock 沙箱增加读取 `/proc/sys/net/core/somaxconn` 的权限，其他沙箱规则沿用上游。
+上游已提供官方镜像 [`ghcr.io/windtf/wireproxy`](https://github.com/windtf/wireproxy/pkgs/container/wireproxy)，由上游[容器工作流](https://github.com/windtf/wireproxy/blob/master/.github/workflows/container.yml)构建发布。官方镜像的 `latest` 同样跟随 `master` 开发分支。
+
+| 项目 | 官方镜像 | 本镜像 |
+| --- | --- | --- |
+| 软件内容 | 上游源码及其声明的依赖 | 上游 `master` 加指定队列扩容和 Landlock 补丁，详见下文 |
+| 运行镜像 | 上游 Dockerfile 使用 Distroless nonroot | 使用 Alpine，以 `65532:65532` 运行 |
+| 镜像分发 | 上游工作流发布到 GHCR | 同时发布到 Docker Hub 和 GHCR |
+| 更新方式 | 上游 `master` 推送触发构建发布 | 每天解析最新 `master` 并完整重建，刷新基础镜像和系统包 |
+
+基础镜像和启动方式可对照[上游 Dockerfile](https://github.com/windtf/wireproxy/blob/master/Dockerfile)。非 root 和用户态代理是二者的共同点，纯用户态代理不需要 `/dev/net/tun`、`privileged` 或 `NET_ADMIN`。本镜像发布 `linux/amd64`、`linux/arm64` 两个平台。
+
+需要这里列出的补丁或 Docker Hub 分发时，可选择本镜像；希望使用未经这些补丁修改的上游构建时，可直接使用官方镜像。
 
 扩大队列会增加积压时的内存需求和排队延迟，不保证吞吐提升，也不代表支持同等数量的并发连接。详细差异见下方[补丁范围](#补丁范围)。
 

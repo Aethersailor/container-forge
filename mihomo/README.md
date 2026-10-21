@@ -4,14 +4,20 @@
 
 [返回镜像目录](../#镜像目录)
 
-## 镜像特点
+## 与官方镜像的区别
+
+上游已提供官方镜像 [`metacubex/mihomo`](https://hub.docker.com/r/metacubex/mihomo)。按当前上游的[平台选择脚本](https://github.com/MetaCubeX/mihomo/blob/Meta/docker/file-name.sh)，官方 amd64 镜像使用 `amd64-v1` 二进制。
+
+本仓库主要补充以下打包与分发选项：
 
 - 直接打包官方正式版和 Alpha 的未修改二进制，不修改或重新编译核心。
-- 提供 amd64 v1/v2/v3，以及 386、arm64、arm/v7 的 Linux 镜像。
+- 在官方 amd64 v1 的基础上，提供 v2/v3 的选择和固定指令等级标签；同时保留 386、arm64、arm/v7 镜像。
+- 除 Docker Hub 外提供 GHCR 地址，并每天重建以刷新基础镜像和系统包。
 - 配置目录和启动参数沿用官方镜像，已有容器部署可替换镜像地址。
-- Docker Hub 和 GHCR 发布相同内容，可任选其一。
 
-本镜像由社区独立维护，与 MetaCubeX 无隶属关系。
+这些区别不增加代理协议或核心功能，也不保证更高性能。需要 v2/v3 指令等级选择、GHCR 地址或本仓库的更新策略时，可使用本镜像；官方镜像已满足需求时，也可直接使用官方镜像。
+
+本镜像由社区独立维护，与 MetaCubeX 无隶属关系。Docker Hub 和 GHCR 发布相同内容，可任选其一。
 
 ## 镜像地址
 
