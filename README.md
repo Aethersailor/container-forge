@@ -1,6 +1,8 @@
 # Container Forge · 容器镜像工坊
 
-为 mihomo、FRP、rsyslog 和 wireproxy 提供可直接拉取的容器镜像，发布到 Docker Hub 和 GitHub Container Registry（GHCR）。按需选择镜像、准备软件配置，即可通过 Docker 或 Docker Compose 部署，无需克隆本仓库或自行构建。
+Container Forge 收纳社区维护的容器镜像打包与分发项目，为软件补齐容器部署、多架构支持或镜像分发能力。镜像发布到 Docker Hub 和 GitHub Container Registry（GHCR），可直接通过 Docker 或 Docker Compose 使用，无需克隆本仓库或自行构建。
+
+目前已提供 mihomo、FRP、rsyslog 和 wireproxy 镜像。未来会继续增加更多软件的打包内容，包括为官方尚未提供 Docker 镜像的软件提供社区容器镜像。已可用的内容以镜像目录为准。
 
 本仓库由社区独立维护，与上游项目无隶属关系。各镜像的来源、标签和使用方式见下文。
 
@@ -8,7 +10,7 @@
 
 ## 镜像目录
 
-点击软件名称查看配置和部署说明；Docker Hub 和 GHCR 均提供对应镜像，可任选一个镜像仓库。
+以下为当前已提供的镜像。点击软件名称查看配置和部署说明；Docker Hub 和 GHCR 均提供对应镜像，可任选一个镜像仓库。
 
 | 软件与使用文档 | 用途与特点 | Docker Hub | GHCR |
 | --- | --- | --- | --- |
@@ -43,7 +45,7 @@ docker pull ghcr.io/aethersailor/mihomo:latest
 拉取镜像后，按对应文档准备配置文件、挂载目录和端口，再启动容器：
 
 - [mihomo](mihomo/#使用)：准备 `config.yaml`，使用文档中的 Compose 示例启动。TUN、透明代理等用法另见上游文档。
-- [FRP](frp/#使用)：根据需要选择 frpc 或 frps，配置和启动参数参见 [FRP 官方文档](https://gofrp.org/zh-cn/docs/)。已有容器部署可替换为本仓库的对应镜像地址。
+- [FRP](frp/#使用)：根据需要部署 frps 服务端和 frpc 客户端，文档提供配置文件和 Compose 示例。已有容器部署可替换为本仓库的对应镜像地址。
 - [rsyslog-min-gtls](rsyslog-min-gtls/#快速开始)：可直接运行示例接收日志。默认监听 TCP/UDP 1514 并输出到 stdout；启用 TLS/mTLS 需要挂载自己的配置和证书。
 - [wireproxy](wireproxy/#使用)：准备 WireGuard/wireproxy 配置，使用文档中的 Compose 示例启动。镜像以非 root 用户运行，配置需允许该用户读取；无需 TUN 设备或特权模式。
 

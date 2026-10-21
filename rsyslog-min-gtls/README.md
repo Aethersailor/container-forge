@@ -1,112 +1,105 @@
 # rsyslog-min-gtls
 
-最小化 rsyslog 镜像（基于 Debian stable-slim），内置 GnuTLS，用于 TLS/mTLS 场景。
-Minimal rsyslog image (based on Debian stable-slim) with GnuTLS for TLS/mTLS.
+用于接收网络日志的精简 [rsyslog](https://github.com/rsyslog/rsyslog) 容器镜像，基于 Debian stable-slim，内置 GnuTLS。适合集中接收 TCP/UDP syslog 日志，或配合自备配置与证书使用 TLS/mTLS。
 
-## 中文
+[返回镜像目录](../#镜像目录)
 
-### 概览
-- 上游：rsyslog 官方仓库
-- 运行时仅复制 rsyslogd 与所需模块，尽量缩小镜像体积
-- 默认配置：监听 TCP/UDP 1514，输出到 stdout
+## 镜像特点
 
-### 内置模块
-imudp, imtcp, lmtcpsrv, lmregexp, lmnet, lmnetstrms, lmnsd_ptcp, lmnsd_gtls
+- 从 rsyslog v8 源码编译，运行镜像仅保留 rsyslogd、所需模块及运行库。
+- 默认监听 TCP/UDP 1514，将收到的日志输出到 stdout，可通过容器日志查看。
+- 内置 GnuTLS 网络流驱动，可配置 TLS 加密和双向证书认证。
+- 提供 `linux/amd64` 镜像，同时发布到 Docker Hub 和 GHCR。
 
-### 快速开始
-从 GHCR 拉取并运行：
-```bash
-docker pull ghcr.io/aethersailor/rsyslog-min-gtls:latest
-docker run --rm -p 1514:1514/tcp -p 1514:1514/udp ghcr.io/aethersailor/rsyslog-min-gtls:latest
-```
+本镜像由社区独立维护，与 rsyslog 上游项目无隶属关系。精简镜像不包含 rsyslog 的全部可选模块，使用自定义配置前请核对下方模块清单。
 
-也可以从 Docker Hub 拉取同一镜像：
-```bash
-docker pull aethersailor/rsyslog-min-gtls:latest
-docker run --rm -p 1514:1514/tcp -p 1514:1514/udp aethersailor/rsyslog-min-gtls:latest
-```
+## 镜像地址与标签
 
-本地构建（可选指定上游 tag）：
-```bash
-docker build --build-arg RSYSLOG_REF=v8.2512.0 -t rsyslog-min-gtls .
-```
+| 镜像仓库 | 地址 |
+| --- | --- |
+| [Docker Hub](https://hub.docker.com/r/aethersailor/rsyslog-min-gtls) | `aethersailor/rsyslog-min-gtls` |
+| [GHCR](https://github.com/users/Aethersailor/packages/container/package/rsyslog-min-gtls) | `ghcr.io/aethersailor/rsyslog-min-gtls` |
 
-### 配置
-- 默认配置来自 `config/rsyslog.conf`，在镜像内路径为 `/etc/rsyslog.conf`。
-- 要启用 TLS/mTLS，请挂载你自己的配置与证书（镜像内预建了 `/etc/rsyslog/tls` 与 `/etc/rsyslog/mtls` 目录）。
-- 示例挂载：
-```bash
+- `latest`：最新构建的 rsyslog v8。
+- `v8.x.y`：指定已发布的版本；将占位版本号替换为镜像仓库中实际存在的标签。
+
+两个镜像仓库发布相同内容。版本标签也会随基础镜像刷新而更新；需要固定镜像内容时，使用对应镜像仓库中的 digest。
+
+## 快速开始
+
+先以默认配置在本机接收日志：
+
+```sh
 docker run --rm \
-  -p 1514:1514/tcp -p 1514:1514/udp \
-  -v /path/to/rsyslog.conf:/etc/rsyslog.conf:ro \
-  -v /path/to/certs:/etc/rsyslog/tls:ro \
-  ghcr.io/aethersailor/rsyslog-min-gtls:latest
+  -p 127.0.0.1:1514:1514/tcp \
+  -p 127.0.0.1:1514:1514/udp \
+  aethersailor/rsyslog-min-gtls:latest
 ```
 
-### 上游跟踪与 CI
-- 工作流始终解析 rsyslog 最新 v8 tag。
-- 定时任务每天北京时间 10:23 完整重建，拉取最新基础镜像并禁用构建缓存，以获取基础镜像和系统包更新；rsyslog 上游版本号不变时也会重新发布。实际执行时间可能延迟。
-- 两个镜像仓库都保留 `v8.x.y` 版本标签；`latest` 始终指向最高版本号。发布流程不会生成 SHA、分支名或无标签的附加镜像。
-- Dependabot 由仓库统一配置，自动合并依赖更新，不增加测试、扫描或人工审批。
-- 成功发布新上游版本后，工作流只写回本工程的 `UPSTREAM_VERSION`。
-- 发布工作流：[rsyslog-min-gtls.yml](../.github/workflows/rsyslog-min-gtls.yml)。镜像路径保持不变，发布凭据使用仓库统一配置。
+将本机日志发送端的目标设为 `127.0.0.1:1514`，协议可选 TCP 或 UDP；收到的日志会显示在当前终端。按 Ctrl+C 停止并删除示例容器。
 
-### 目录速览
-- `Dockerfile`: 多阶段构建，运行时只复制必要产物
-- `scripts/build-rsyslog.sh`: 编译配置与裁剪选项
-- `config/rsyslog.conf`: 默认最小配置
-- `UPSTREAM_VERSION`: 记录最新上游 tag
+使用 GHCR 时，将镜像名改为 `ghcr.io/aethersailor/rsyslog-min-gtls:latest`。示例端口仅向宿主机本机开放；如需接收其他设备的日志，需将映射地址改为宿主机可达的地址，并配置防火墙。
 
-## English
+默认配置是明文 syslog，未启用 TLS/mTLS；内置 GnuTLS 不会自动为监听端口启用加密。
 
-### Overview
-- Upstream: official rsyslog repository
-- Runtime stage copies only rsyslogd and required modules for a smaller image
-- Default config: listens on TCP/UDP 1514 and logs to stdout
+## 使用 Docker Compose
 
-### Included modules
+创建 `compose.yaml`，使用默认配置在后台运行：
+
+```yaml
+services:
+  rsyslog:
+    image: aethersailor/rsyslog-min-gtls:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1514:1514/tcp"
+      - "127.0.0.1:1514:1514/udp"
+```
+
+在该目录启动并查看日志：
+
+```sh
+docker compose up -d
+docker compose logs --tail=50 -f rsyslog
+```
+
+## 自定义配置与 TLS/mTLS
+
+默认配置来自 [`config/rsyslog.conf`](config/rsyslog.conf)，容器内路径为 `/etc/rsyslog.conf`。挂载自定义配置会替换整个默认配置，监听端口和日志输出位置由自定义文件决定。
+
+在部署目录准备 `rsyslog.conf`，需要 TLS 时同时准备 `certs` 目录及证书。在上方 Compose 服务中加入：
+
+```yaml
+    volumes:
+      - ./rsyslog.conf:/etc/rsyslog.conf:ro
+      - ./certs:/etc/rsyslog/tls:ro
+```
+
+配置中的证书路径须使用容器内的 `/etc/rsyslog/tls/…`。镜像也预建了 `/etc/rsyslog/mtls` 目录，可按需挂载。TLS/mTLS 的监听端口、CA、服务端证书、私钥和对端认证规则需在自己的配置中设置，配置方法见 [rsyslog 官方文档](https://www.rsyslog.com/doc/)。
+
+启用 TLS 时需在配置中选择 `gtls` 驱动，并设置相应的加密与认证模式；仅挂载证书不会启用 TLS。若自定义监听端口不是 1514，还需同步调整 Compose 的端口映射。需要持久化日志文件或工作目录时，应按配置挂载对应存储。
+
+镜像内的可加载模块：
+
+```text
 imudp, imtcp, lmtcpsrv, lmregexp, lmnet, lmnetstrms, lmnsd_ptcp, lmnsd_gtls
-
-### Quick start
-Pull and run from GHCR:
-```bash
-docker pull ghcr.io/aethersailor/rsyslog-min-gtls:latest
-docker run --rm -p 1514:1514/tcp -p 1514:1514/udp ghcr.io/aethersailor/rsyslog-min-gtls:latest
 ```
 
-The same image is also available from Docker Hub:
-```bash
-docker pull aethersailor/rsyslog-min-gtls:latest
-docker run --rm -p 1514:1514/tcp -p 1514:1514/udp aethersailor/rsyslog-min-gtls:latest
+其中 `imudp` 和 `imtcp` 用于网络日志输入，`lmnsd_gtls` 提供 GnuTLS 网络流支持。模块路径为 `/usr/lib/rsyslog`。默认配置不会自动加载 `/etc/rsyslog.d/` 下的文件；使用配置片段时，需在自己的主配置中显式包含它们。
+
+## 更新镜像
+
+在 `compose.yaml` 所在目录执行：
+
+```sh
+docker compose pull
+docker compose up -d
 ```
 
-Build locally (optional upstream tag):
-```bash
-docker build --build-arg RSYSLOG_REF=v8.2512.0 -t rsyslog-min-gtls .
-```
+每天北京时间 10:23 跟踪上游最新 rsyslog v8 tag 并完整重建，刷新基础镜像和系统包；上游版本号不变时也会重新发布。定时执行可能延迟，记录见[发布工作流](https://github.com/Aethersailor/container-forge/actions/workflows/rsyslog-min-gtls.yml)。镜像更新后，已运行的容器仍需自行更新。
 
-### Configuration
-- Default config is `config/rsyslog.conf`, copied to `/etc/rsyslog.conf` in the image.
-- To enable TLS/mTLS, mount your own config and certificates (the image has `/etc/rsyslog/tls` and `/etc/rsyslog/mtls`).
-- Example mount:
-```bash
-docker run --rm \
-  -p 1514:1514/tcp -p 1514:1514/udp \
-  -v /path/to/rsyslog.conf:/etc/rsyslog.conf:ro \
-  -v /path/to/certs:/etc/rsyslog/tls:ro \
-  ghcr.io/aethersailor/rsyslog-min-gtls:latest
-```
+## 反馈与许可
 
-### Upstream tracking & CI
-- Workflow always resolves the latest rsyslog v8 tag.
-- Scheduled runs rebuild daily at 02:23 UTC (10:23 Asia/Shanghai), pulling the latest base images with the build cache disabled to refresh base images and system packages. Images are published even when the upstream rsyslog version is unchanged. Scheduled execution may be delayed.
-- Both registries retain `v8.x.y` version tags, while `latest` always points to the highest version. The publication workflow does not create SHA, branch, or untagged auxiliary images.
-- Dependabot is configured at repository level and merges dependency updates automatically, without tests, scans, or manual approval.
-- After a new upstream version is published successfully, the workflow updates this project's `UPSTREAM_VERSION`.
-- Publication workflow: [rsyslog-min-gtls.yml](../.github/workflows/rsyslog-min-gtls.yml). Image paths stay unchanged and publication uses repository-level credentials.
+镜像拉取、容器启动或内置模块问题请在[本仓库 Issues](https://github.com/Aethersailor/container-forge/issues) 反馈，并提供镜像标签、启动配置及错误日志；提交前移除私钥等敏感信息。rsyslog 配置和功能说明见[上游项目](https://github.com/rsyslog/rsyslog)及官方文档。
 
-### Layout
-- `Dockerfile`: multi-stage build; runtime copies only required artifacts
-- `scripts/build-rsyslog.sh`: configure/build with trimmed options
-- `config/rsyslog.conf`: default minimal config
-- `UPSTREAM_VERSION`: records the latest upstream tag
+本目录许可证：[GPL-3.0](LICENSE)。
