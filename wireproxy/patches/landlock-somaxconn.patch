@@ -1,0 +1,11 @@
+--- a/cmd/wireproxy/main.go
++++ b/cmd/wireproxy/main.go
+@@ -125,6 +125,8 @@
+ 			landlock.ROFiles("/proc/self/status").IgnoreIfMissing(),
+ 			landlock.ROFiles("/usr/share/locale").IgnoreIfMissing(),
+ 			landlock.ROFiles("/proc/self/cmdline").IgnoreIfMissing(),
++			// Allow Go to read the host TCP listener backlog after sandboxing.
++			landlock.ROFiles("/proc/sys/net/core/somaxconn").IgnoreIfMissing(),
+ 			landlock.ROFiles("/usr/share/zoneinfo").IgnoreIfMissing(),
+ 			landlock.ROFiles("/proc/sys/kernel/version").IgnoreIfMissing(),
+ 			landlock.ROFiles("/proc/sys/kernel/ngroups_max").IgnoreIfMissing(),

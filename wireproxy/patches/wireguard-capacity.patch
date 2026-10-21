@@ -1,0 +1,40 @@
+--- a/device/queueconstants_default.go
++++ b/device/queueconstants_default.go
+@@ -10,10 +10,10 @@
+ import "golang.zx2c4.com/wireguard/conn"
+ 
+ const (
+-	QueueStagedSize            = conn.IdealBatchSize
+-	QueueOutboundSize          = 1024
+-	QueueInboundSize           = 1024
+-	QueueHandshakeSize         = 1024
++	QueueStagedSize            = 512 * conn.IdealBatchSize
++	QueueOutboundSize          = 65536
++	QueueInboundSize           = 65536
++	QueueHandshakeSize         = 65536
+ 	MaxSegmentSize             = (1 << 16) - 1 // largest possible UDP datagram
+ 	PreallocatedBuffersPerPool = 0             // Disable and allow for infinite memory growth
+ )
+--- a/device/device.go
++++ b/device/device.go
+@@ -217,7 +217,8 @@
+ func (device *Device) IsUnderLoad() bool {
+ 	// check if currently under load
+ 	now := time.Now()
+-	underLoad := len(device.queue.handshake.c) >= QueueHandshakeSize/8
++	// Preserve the upstream 1024/8 cookie threshold when enlarging the queue.
++	underLoad := len(device.queue.handshake.c) >= 128
+ 	if underLoad {
+ 		device.rate.underLoadUntil.Store(now.Add(UnderLoadAfterTime).UnixNano())
+ 		return true
+--- a/tun/netstack/tun.go
++++ b/tun/netstack/tun.go
+@@ -59,7 +59,7 @@
+ 		HandleLocal:        true,
+ 	}
+ 	dev := &netTun{
+-		ep:             channel.New(1024, uint32(mtu), ""),
++		ep:             channel.New(65536, uint32(mtu), ""),
+ 		stack:          stack.New(opts),
+ 		events:         make(chan tun.Event, 10),
+ 		incomingPacket: make(chan *buffer.View),

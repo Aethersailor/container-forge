@@ -13,6 +13,7 @@ Independent container image packaging and distribution for upstream projects.
 | [mihomo](mihomo/) | 打包官方正式版和 Alpha 二进制，补齐 amd64 v1/v2/v3 | [`aethersailor/mihomo`](https://hub.docker.com/r/aethersailor/mihomo) | [`ghcr.io/aethersailor/mihomo`](https://github.com/users/Aethersailor/packages/container/package/mihomo) | 每 30 分钟检查，每天完整重建 |
 | [FRP](frp/) | 原样同步官方 frpc、frps 镜像，维护 `latest` 标签 | [`aethersailor/frpc`](https://hub.docker.com/r/aethersailor/frpc)、[`aethersailor/frps`](https://hub.docker.com/r/aethersailor/frps) | [`ghcr.io/aethersailor/frpc`](https://github.com/users/Aethersailor/packages/container/package/frpc)、[`ghcr.io/aethersailor/frps`](https://github.com/users/Aethersailor/packages/container/package/frps) | 每 6 小时检查 |
 | [rsyslog-min-gtls](rsyslog-min-gtls/) | 编译精简 rsyslog，保留 GnuTLS 和 TLS/mTLS 支持 | [`aethersailor/rsyslog-min-gtls`](https://hub.docker.com/r/aethersailor/rsyslog-min-gtls) | [`ghcr.io/aethersailor/rsyslog-min-gtls`](https://github.com/users/Aethersailor/packages/container/package/rsyslog-min-gtls) | 每天完整重建 |
+| [wireproxy](wireproxy/) | 编译上游 master，保留队列容量和 Landlock 补丁 | [`aethersailor/wireproxy`](https://hub.docker.com/r/aethersailor/wireproxy) | [`ghcr.io/aethersailor/wireproxy`](https://github.com/users/Aethersailor/packages/container/package/wireproxy) | 每天完整重建 |
 
 具体标签、支持架构和使用方法见各工程的 README。定时任务的实际执行时间可能延迟。
 
@@ -25,6 +26,7 @@ Independent container image packaging and distribution for upstream projects.
     mihomo.yml
     frp.yml
     rsyslog-min-gtls.yml
+    wireproxy.yml
     dependabot-auto-merge.yml
 mihomo/
   README.md
@@ -40,6 +42,12 @@ rsyslog-min-gtls/
   LICENSE
   UPSTREAM_VERSION
   config/
+  scripts/
+wireproxy/
+  README.md
+  Dockerfile
+  LICENSE
+  patches/
   scripts/
 ```
 
