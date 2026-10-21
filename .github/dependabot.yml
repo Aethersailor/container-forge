@@ -21,3 +21,15 @@ updates:
     commit-message:
       prefix: build
       include: scope
+  - package-ecosystem: docker
+    directory: /rsyslog-min-gtls
+    schedule:
+      interval: daily
+      time: '08:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 20
+    groups:
+      rsyslog-dependencies:
+        patterns: ['*']
+    commit-message:
+      prefix: chore(deps)

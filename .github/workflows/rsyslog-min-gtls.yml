@@ -1,0 +1,186 @@
+name: Build rsyslog-min-gtls images
+'on':
+  workflow_dispatch: null
+  schedule:
+  - cron: 23 2 * * *
+  push:
+    branches:
+    - main
+    paths:
+    - rsyslog-min-gtls/**
+    - .github/workflows/rsyslog-min-gtls.yml
+permissions:
+  contents: read
+concurrency:
+  group: rsyslog-min-gtls-publish-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  GHCR_IMAGE: ghcr.io/aethersailor/rsyslog-min-gtls
+  DOCKERHUB_IMAGE: docker.io/aethersailor/rsyslog-min-gtls
+jobs:
+  publish:
+    name: Publish image
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: rsyslog-min-gtls
+    permissions:
+      contents: write
+      packages: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        fetch-depth: 0
+    - name: Detect latest upstream tag
+      id: upstream
+      shell: bash
+      run: |
+        set -euo pipefail
+        latest_tag="$({
+          git ls-remote --tags --refs https://github.com/rsyslog/rsyslog.git 'v8.*' \
+            | awk '{print $2}' \
+            | sed 's#refs/tags/##' \
+            | sort -V \
+            | tail -n 1
+        })"
+        if [[ ! "$latest_tag" =~ ^v8\.[0-9]+\.[0-9]+$ ]]; then
+          echo "Unable to resolve a valid upstream rsyslog tag: $latest_tag" >&2
+          exit 1
+        fi
+        echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+    - name: Decide whether to publish
+      id: decide
+      shell: bash
+      env:
+        LATEST_TAG: ${{ steps.upstream.outputs.latest_tag }}
+      run: |
+        set -euo pipefail
+        needs_build=true
+        if [[ "${{ github.event_name }}" == "schedule" ]]; then
+          current="$(tr -d ' \r\n\t' < UPSTREAM_VERSION 2>/dev/null || true)"
+          if [[ "$LATEST_TAG" == "$current" ]]; then
+            needs_build=false
+          fi
+        fi
+        echo "needs_build=$needs_build" >> "$GITHUB_OUTPUT"
+    - name: Set up Docker Buildx
+      if: steps.decide.outputs.needs_build == 'true'
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
+    - name: Log in to GHCR
+      if: steps.decide.outputs.needs_build == 'true'
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to Docker Hub
+      if: steps.decide.outputs.needs_build == 'true'
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Prepare image tags
+      id: tags
+      if: steps.decide.outputs.needs_build == 'true'
+      shell: bash
+      env:
+        RSYSLOG_REF: ${{ steps.upstream.outputs.latest_tag }}
+      run: |
+        set -euo pipefail
+        image="$GHCR_IMAGE"
+        echo "image=$image" >> "$GITHUB_OUTPUT"
+        echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+        echo "${image}:latest" >> "$GITHUB_OUTPUT"
+        echo "${image}:${RSYSLOG_REF}" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
+    - name: Build and push image
+      id: build
+      if: steps.decide.outputs.needs_build == 'true'
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
+      with:
+        context: ./rsyslog-min-gtls
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ steps.tags.outputs.tags }}
+          ${{ env.DOCKERHUB_IMAGE }}:latest
+          ${{ env.DOCKERHUB_IMAGE }}:${{ steps.upstream.outputs.latest_tag }}
+        build-args: |
+          RSYSLOG_REF=${{ steps.upstream.outputs.latest_tag }}
+        labels: |
+          org.opencontainers.image.source=https://github.com/Aethersailor/container-forge
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.version=${{ steps.upstream.outputs.latest_tag }}
+        provenance: false
+        sbom: false
+        cache-from: type=gha,scope=rsyslog-min-gtls-publish
+        cache-to: type=gha,mode=max,scope=rsyslog-min-gtls-publish
+    - name: Verify published image digests
+      if: steps.decide.outputs.needs_build == 'true'
+      shell: bash
+      env:
+        EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
+        GHCR_IMAGE: ${{ steps.tags.outputs.image }}
+        DOCKERHUB_IMAGE: ${{ env.DOCKERHUB_IMAGE }}
+        RSYSLOG_REF: ${{ steps.upstream.outputs.latest_tag }}
+      run: |
+        set -euo pipefail
+        refs=(
+          "${GHCR_IMAGE}:latest"
+          "${GHCR_IMAGE}:${RSYSLOG_REF}"
+          "${DOCKERHUB_IMAGE}:latest"
+          "${DOCKERHUB_IMAGE}:${RSYSLOG_REF}"
+        )
+        for ref in "${refs[@]}"; do
+          digest="$(
+            docker buildx imagetools inspect "$ref" \
+              | awk '$1 == "Digest:" { print $2; exit }'
+          )"
+          if [[ -z "$digest" || "$digest" != "$EXPECTED_DIGEST" ]]; then
+            echo "Unexpected digest for ${ref}: ${digest:-missing}" >&2
+            exit 1
+          fi
+          media_type="$(
+            docker buildx imagetools inspect --raw "$ref" \
+              | jq -r '.mediaType // empty'
+          )"
+          if [[ "$media_type" != "application/vnd.oci.image.manifest.v1+json" \
+            && "$media_type" != "application/vnd.docker.distribution.manifest.v2+json" ]]; then
+            echo "${ref} is not a direct image manifest: ${media_type:-missing}" >&2
+            exit 1
+          fi
+        done
+    - name: Clean and verify container registries
+      if: steps.decide.outputs.needs_build == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      run: |
+        bash ./scripts/clean-container-registries.sh \
+          '${{ steps.tags.outputs.image }}' \
+          'aethersailor' \
+          'rsyslog-min-gtls'
+    - name: Record upstream version
+      if: steps.decide.outputs.needs_build == 'true'
+      shell: bash
+      env:
+        RSYSLOG_REF: ${{ steps.upstream.outputs.latest_tag }}
+      run: |
+        set -euo pipefail
+        printf '%s\n' "$RSYSLOG_REF" > UPSTREAM_VERSION
+        if git diff --quiet -- UPSTREAM_VERSION; then
+          exit 0
+        fi
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add UPSTREAM_VERSION
+        git commit -m "chore(upstream): bump rsyslog to $RSYSLOG_REF"
+        git push origin HEAD:main
+    - name: Skip unchanged upstream
+      if: steps.decide.outputs.needs_build != 'true'
+      shell: bash
+      run: echo "Upstream unchanged; skipping image publication."

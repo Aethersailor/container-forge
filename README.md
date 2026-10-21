@@ -12,6 +12,7 @@ Independent container image packaging and distribution for upstream projects.
 | --- | --- | --- | --- | --- |
 | [mihomo](mihomo/) | 打包官方正式版和 Alpha 二进制，补齐 amd64 v1/v2/v3 | [`aethersailor/mihomo`](https://hub.docker.com/r/aethersailor/mihomo) | [`ghcr.io/aethersailor/mihomo`](https://github.com/users/Aethersailor/packages/container/package/mihomo) | 每 30 分钟检查 |
 | [FRP](frp/) | 原样同步官方 frpc、frps 镜像，维护 `latest` 标签 | [`aethersailor/frpc`](https://hub.docker.com/r/aethersailor/frpc)、[`aethersailor/frps`](https://hub.docker.com/r/aethersailor/frps) | [`ghcr.io/aethersailor/frpc`](https://github.com/users/Aethersailor/packages/container/package/frpc)、[`ghcr.io/aethersailor/frps`](https://github.com/users/Aethersailor/packages/container/package/frps) | 每 6 小时检查 |
+| [rsyslog-min-gtls](rsyslog-min-gtls/) | 编译精简 rsyslog，保留 GnuTLS 和 TLS/mTLS 支持 | [`aethersailor/rsyslog-min-gtls`](https://hub.docker.com/r/aethersailor/rsyslog-min-gtls) | [`ghcr.io/aethersailor/rsyslog-min-gtls`](https://github.com/users/Aethersailor/packages/container/package/rsyslog-min-gtls) | 每天检查 |
 
 具体标签、支持架构和使用方法见各工程的 README。定时任务的实际执行时间可能延迟。
 
@@ -23,6 +24,7 @@ Independent container image packaging and distribution for upstream projects.
   workflows/
     mihomo.yml
     frp.yml
+    rsyslog-min-gtls.yml
     dependabot-auto-merge.yml
 mihomo/
   README.md
@@ -32,11 +34,18 @@ mihomo/
 frp/
   README.md
   scripts/
+rsyslog-min-gtls/
+  README.md
+  Dockerfile
+  LICENSE
+  UPSTREAM_VERSION
+  config/
+  scripts/
 ```
 
 每个工程自行维护所需的 Dockerfile、脚本、配置和文档。FRP 使用镜像原样复制，不需要 Dockerfile。各工程不共用构建脚本、发布模板或版本号。
 
-GitHub Actions 要求工作流入口放在 `.github/workflows/`。`mihomo.yml` 和 `frp.yml` 各自定义定时任务、目录触发条件、工作目录和并发组，可以单独手动执行；修改一个工程不会触发另一个工程的推送发布。mihomo 的重建判断只依据自身打包文件和上游版本。
+GitHub Actions 要求工作流入口放在 `.github/workflows/`。各工程的工作流各自定义定时任务、目录触发条件、工作目录和并发组，可以单独手动执行；修改一个工程不会触发另一个工程的推送发布。mihomo 的重建判断只依据自身打包文件和上游版本。
 
 首页、Dependabot 配置、Dependabot 自动合并和文本换行规则由仓库统一维护。Dependabot 自动合并不增加测试、审批或状态检查门槛。
 
@@ -62,4 +71,4 @@ GHCR 发布使用 GitHub 自动生成的 `GITHUB_TOKEN` 和 `packages: write` �
 
 各工程自行指定镜像地址。FRP 的 Docker Hub 命名空间固定为 `aethersailor`；mihomo 的两个镜像地址在自身工作流中明确指定。
 
-各工程保留各自的许可证及上游声明；`mihomo/LICENSE` 适用于 mihomo 工程。迁移来源为 [m-core-docker](https://github.com/Aethersailor/m-core-docker) 和 [frp-image-sync](https://github.com/Aethersailor/frp-image-sync)。
+各工程保留各自的许可证及上游声明；`mihomo/LICENSE` 和 `rsyslog-min-gtls/LICENSE` 分别适用于对应工程。迁移来源为 [m-core-docker](https://github.com/Aethersailor/m-core-docker)、[frp-image-sync](https://github.com/Aethersailor/frp-image-sync) 和 [rsyslog-min-gtls](https://github.com/Aethersailor/rsyslog-min-gtls)。
