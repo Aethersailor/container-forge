@@ -220,7 +220,7 @@ def build(context, images, plan, identity, builder_revision):
               "org.opencontainers.image.licenses": "GPL-3.0-only",
               "org.opencontainers.image.description": "Official mihomo binaries repacked with amd64 v1/v2/v3",
               "io.github.mihomo-docker.upstream-revision": plan["revision"]}
-    command = ["docker", "buildx", "build", "--platform", ",".join(PLATFORMS),
+    command = ["docker", "buildx", "build", "--pull", "--no-cache", "--platform", ",".join(PLATFORMS),
                "--provenance=false", "--metadata-file", str(context / "build.json"),
                "--annotation", f"index:{FINGERPRINT}={identity}",
                "--annotation", f"index:org.opencontainers.image.version={plan['version']}"]
