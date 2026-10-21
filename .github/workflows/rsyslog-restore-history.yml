@@ -1,0 +1,36 @@
+name: Restore rsyslog Docker Hub history
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  copy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Install regctl
+        run: |
+          curl --fail --location --silent --show-error --retry 3 https://github.com/regclient/regclient/releases/download/v0.11.7/regctl-linux-amd64 -o "$RUNNER_TEMP/regctl"
+          echo '3737fbbdd791e04e7a831640b681f3397a376498e80e2ad9b1b2d27296f239bc  '"$RUNNER_TEMP/regctl" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/regctl"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Copy the three missing historical releases without rebuilding
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          REGCTL_CONFIG: ${{ runner.temp }}/rsyslog-history-regctl.json
+        run: |
+          set -euo pipefail
+          trap 'rm -f "$REGCTL_CONFIG"' EXIT
+          printf '%s' "$DOCKERHUB_TOKEN" | regctl registry login docker.io --user "$DOCKERHUB_USERNAME" --pass-stdin
+          while read -r version digest; do
+            target="docker.io/aethersailor/rsyslog-min-gtls:$version"
+            regctl image copy --force-recursive "ghcr.io/aethersailor/rsyslog-min-gtls@$digest" "$target"
+            actual="$(regctl image digest "$target")"
+            test "$actual" = "$digest"
+            echo "MATCH $target = $digest"
+          done <<'VERSIONS'
+          v8.2512.0 sha256:5708aef07e022666b805d54dd1f7878ae6b53f826a5c86b1c2cb66d8e25e7650
+          v8.2602.0 sha256:3c02c1782ddd088799c1600dc3000c11bd09f3fcc38fe37ae48419d7d68de364
+          v8.2604.0 sha256:72b9f4cd61b74e26714650d081970766b33aa5515f998f21ce91f131ca9e7875
+          VERSIONS
