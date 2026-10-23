@@ -56,7 +56,7 @@
 
 - 所有工程共用 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN`。Docker Hub Token 为账号级 Read、Write、Delete 权限，覆盖账号可访问的镜像仓库，供当前及以后新增的工程使用。
 - GHCR 发布使用 GitHub 自动生成的 `GITHUB_TOKEN`，发布任务设置 `packages: write`。新镜像由对应工作流创建；接管已有镜像包时，关联到本仓库并授予管理权限，以支持既有发布和版本撤回功能。
-- Dependabot 自动合并统一使用 `DEPENDABOT_MERGE_TOKEN`，同一值配置到仓库的 Actions 和 Dependabot Secrets，覆盖本仓库的全部工程。
+- Dependabot 自动合并使用 GitHub 内置 `GITHUB_TOKEN`，由 `github-actions[bot]` 执行；不配置额外的个人 Token 或 GitHub App。合并后按变更路径触发对应工程的原有工作流。
 - 新增工程不再创建按软件区分的 Token、Secret 或 GitHub App。各工程分别引用统一凭据，独立决定构建和发布行为。
 - 凭据仅保存到服务的 Secret 配置中，不写入代码、文档、日志或镜像产物。
 
