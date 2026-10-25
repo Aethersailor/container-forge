@@ -158,6 +158,26 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 
 </details>
 
+<details>
+<summary>🗄️ restic-rclone · 加密备份与云存储后端</summary>
+
+将 restic 和 rclone 放在同一容器中，通过 restic 原生的 `rclone:` 后端，把加密、去重后的快照写入 rclone remote。
+
+**与官方镜像的区别**：restic 已有 [Docker Hub](https://hub.docker.com/r/restic/restic) 和 [GHCR](https://github.com/restic/restic/pkgs/container/restic) 官方镜像，但当前[官方 Dockerfile](https://github.com/restic/restic/blob/master/docker/Dockerfile) 未包含 rclone；rclone 也有[独立官方镜像](https://rclone.org/install/#docker-installation)。本工程使用两者未修改的正式版二进制，补充同容器调用，不改变备份格式或传输协议。
+
+| 镜像仓库 | 地址 |
+| --- | --- |
+| [Docker Hub](https://hub.docker.com/r/aethersailor/restic-rclone) | `aethersailor/restic-rclone` |
+| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/restic-rclone) | `ghcr.io/aethersailor/restic-rclone` |
+
+**标签与架构**：`latest` 跟随最新正式版组合，另提供 `restic-0.19.1-rclone-1.75.2` 等组合标签；支持 Linux amd64、arm64。
+
+**🚀 使用**：准备 rclone remote、仓库密码和只读备份源，按 [Compose 示例](restic-rclone/#使用)运行初始化、备份、查看快照和恢复。restic 自行启停 rclone，无需端口或额外服务；备份调度由宿主机安排。
+
+**🔄 更新**：每天北京时间 12:07 检查两者最新正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](restic-rclone/#更新与来源)。
+
+</details>
+
 ## 使用与更新
 
 使用前安装 Docker；使用 Compose 示例时，还需要 Docker Compose。展开所需项目，选择镜像地址和标签，再按对应文档准备配置、挂载目录和端口。代理规则、连接凭据和证书等配置需自行准备。

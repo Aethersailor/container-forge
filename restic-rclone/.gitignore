@@ -1,0 +1,6 @@
+dist/
+__pycache__/
+rclone/
+restic-password
+data/
+restore/

@@ -1,0 +1,111 @@
+name: Build restic-rclone images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'restic-rclone/**'
+      - '!restic-rclone/**/*.md'
+      - '!restic-rclone/**/README*'
+      - '!restic-rclone/docs/**'
+      - '.github/workflows/restic-rclone.yml'
+  schedule:
+    - cron: '7 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restic-rclone-publish
+  cancel-in-progress: false
+
+env:
+  GHCR_IMAGE: ghcr.io/aethersailor/restic-rclone
+  DOCKERHUB_IMAGE: docker.io/aethersailor/restic-rclone
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare official binaries
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 restic-rclone/scripts/prepare.py
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        with:
+          platforms: arm64
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and publish
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: ./restic-rclone
+          platforms: linux/amd64,linux/arm64
+          push: true
+          pull: true
+          no-cache: true
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ env.GHCR_IMAGE }}:latest
+            ${{ env.GHCR_IMAGE }}:${{ steps.upstream.outputs.version }}
+            ${{ env.DOCKERHUB_IMAGE }}:latest
+            ${{ env.DOCKERHUB_IMAGE }}:${{ steps.upstream.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=restic-rclone
+            org.opencontainers.image.description=Official restic and rclone binaries in one image
+            org.opencontainers.image.source=https://github.com/Aethersailor/container-forge
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.upstream.outputs.version }}
+            org.opencontainers.image.licenses=BSD-2-Clause AND MIT
+            io.container-forge.restic.source=https://github.com/restic/restic
+            io.container-forge.restic.version=${{ steps.upstream.outputs.restic_version }}
+            io.container-forge.restic.revision=${{ steps.upstream.outputs.restic_revision }}
+            io.container-forge.rclone.source=https://github.com/rclone/rclone
+            io.container-forge.rclone.version=${{ steps.upstream.outputs.rclone_version }}
+            io.container-forge.rclone.revision=${{ steps.upstream.outputs.rclone_revision }}
+      - name: Verify published digests
+        env:
+          EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
+          VERSION: ${{ steps.upstream.outputs.version }}
+        run: |
+          set -euo pipefail
+          for image in "$GHCR_IMAGE" "$DOCKERHUB_IMAGE"; do
+            for tag in latest "$VERSION"; do
+              manifest="$(docker buildx imagetools inspect "$image:$tag" --format '{{json .Manifest}}')"
+              digest="$(jq -er '.digest' <<< "$manifest")"
+              if [[ "$digest" != "$EXPECTED_DIGEST" ]]; then
+                echo "Digest mismatch for $image:$tag: $digest != $EXPECTED_DIGEST" >&2
+                exit 1
+              fi
+              echo "$image:$tag digest verified: $digest"
+            done
+          done
+          {
+            echo '### restic-rclone'
+            echo "Version: \`$VERSION\`"
+            echo "Platforms: linux/amd64, linux/arm64"
+            echo "Digest: \`$EXPECTED_DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"

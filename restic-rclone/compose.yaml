@@ -1,0 +1,21 @@
+services:
+  restic:
+    image: aethersailor/restic-rclone:latest
+    hostname: restic-backup
+    environment:
+      RESTIC_REPOSITORY: rclone:backup:restic
+      RESTIC_PASSWORD_FILE: /run/secrets/restic_password
+    volumes:
+      - ./data:/data:ro
+      - ./rclone:/config/rclone
+      - restic-cache:/cache
+    secrets:
+      - restic_password
+    command: ["--help"]
+
+secrets:
+  restic_password:
+    file: ./restic-password
+
+volumes:
+  restic-cache:
