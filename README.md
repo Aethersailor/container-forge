@@ -114,6 +114,28 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 
 </details>
 
+<details>
+<summary><strong>🧦 HEV SOCKS5 Server · 轻量 SOCKS5 服务端</strong></summary>
+
+**用途**：独立部署支持 TCP、UDP 和用户名密码认证的 SOCKS5 代理服务。
+
+**上游容器情况**：上游提供 [Dockerfile 和自行构建说明](https://github.com/heiher/hev-socks5-server/tree/main/docker)，当前构建流程主要交付各平台二进制，未见现成运行镜像的发布入口。
+
+**本仓库的区别**：直接打包未修改的官方正式 Release 二进制，核对上游 SHA-256，提供 amd64、arm64 镜像及每日基础镜像刷新。使用原生 YAML 配置，不修改上游协议或认证逻辑，详见[项目说明](hev-socks5-server/)。
+
+| 镜像仓库 | 地址 |
+| --- | --- |
+| [Docker Hub](https://hub.docker.com/r/aethersailor/hev-socks5-server) | `aethersailor/hev-socks5-server` |
+| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/hev-socks5-server) | `ghcr.io/aethersailor/hev-socks5-server` |
+
+**标签与架构**：`latest` 跟随最新打包的官方正式版，另提供 `2.13.1` 等上游版本标签；支持 Linux amd64、arm64。
+
+**🚀 使用**：准备自己的账号密码和 YAML 配置，按 [Compose 示例](hev-socks5-server/#使用)启动。示例使用 Linux host 网络并以 `65532:65532` 运行，不需要特权模式或 TUN；UDP 端口与 bridge 网络的配置要求见[UDP 说明](hev-socks5-server/#udp-与端口映射)。
+
+**🔄 更新**：每天跟踪官方最新正式 Release 并完整重建，刷新基础镜像和系统包；来源记录随镜像提供，详见[更新说明](hev-socks5-server/#更新与来源)。
+
+</details>
+
 ## 使用与更新
 
 使用前安装 Docker；使用 Compose 示例时，还需要 Docker Compose。展开所需项目，选择镜像地址和标签，再按对应文档准备配置、挂载目录和端口。代理规则、连接凭据和证书等配置需自行准备。

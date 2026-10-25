@@ -1,0 +1,7 @@
+services:
+  hev-socks5-server:
+    image: aethersailor/hev-socks5-server:latest
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./config.yml:/etc/hev-socks5-server/config.yml:ro

@@ -1,0 +1,14 @@
+main:
+  workers: 2
+  port: 1080
+  listen-address: '0.0.0.0'
+  # Default UDP relay ports are allocated dynamically.
+  # udp-port: 20000-20100
+
+auth:
+  username: proxy-user
+  password: REPLACE_WITH_YOUR_PASSWORD
+
+misc:
+  log-file: stderr
+  log-level: warn

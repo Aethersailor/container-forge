@@ -83,6 +83,9 @@ jobs:
             if jq -e 'any(.[]; . as $path | reduce ([{"regex":"^wireproxy/.*$","include":true},{"regex":"^wireproxy/(?:.*/)?[^/]*\\.md$","include":false},{"regex":"^wireproxy/(?:.*/)?README[^/]*$","include":false},{"regex":"^wireproxy/docs/.*$","include":false},{"regex":"^\\.github/workflows/wireproxy\\.yml$","include":true}][]) as $pattern (false; if ($path | test($pattern.regex)) then $pattern.include else . end))' <<<"$merged_files" >/dev/null; then
               gh workflow run 'wireproxy.yml' --repo "$REPOSITORY" --ref "$BASE_BRANCH" || result=1
             fi
+            if jq -e 'any(.[]; . == ".github/workflows/hev-socks5-server.yml" or (startswith("hev-socks5-server/") and (test("\\.md$|(^|/)README[^/]*$|^hev-socks5-server/docs/") | not)))' <<<"$merged_files" >/dev/null; then
+              gh workflow run 'hev-socks5-server.yml' --repo "$REPOSITORY" --ref "$BASE_BRANCH" || result=1
+            fi
           fi
 
           echo "Merged $merged Dependabot PR(s) with the repository Actions token"
