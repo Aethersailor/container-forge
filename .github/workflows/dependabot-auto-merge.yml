@@ -86,6 +86,9 @@ jobs:
             if jq -e 'any(.[]; . == ".github/workflows/hev-socks5-server.yml" or (startswith("hev-socks5-server/") and (test("\\.md$|(^|/)README[^/]*$|^hev-socks5-server/docs/") | not)))' <<<"$merged_files" >/dev/null; then
               gh workflow run 'hev-socks5-server.yml' --repo "$REPOSITORY" --ref "$BASE_BRANCH" || result=1
             fi
+            if jq -e 'any(.[]; . == ".github/workflows/dnscrypt-proxy.yml" or (startswith("dnscrypt-proxy/") and (test("\\.md$|(^|/)README[^/]*$|^dnscrypt-proxy/docs/") | not)))' <<<"$merged_files" >/dev/null; then
+              gh workflow run 'dnscrypt-proxy.yml' --repo "$REPOSITORY" --ref "$BASE_BRANCH" || result=1
+            fi
           fi
 
           echo "Merged $merged Dependabot PR(s) with the repository Actions token"

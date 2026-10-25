@@ -136,6 +136,28 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 
 </details>
 
+<details>
+<summary><strong>🔒 dnscrypt-proxy · 加密 DNS 转发</strong></summary>
+
+**用途**：通过 DNSCrypt、DoH 等协议连接加密 DNS 上游，向客户端提供普通 UDP/TCP DNS 接口和本地缓存。
+
+**上游容器情况**：上游 [DNSCrypt/dnscrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) 交付源码和多平台正式二进制，本次核对的发布流程未见公开运行镜像的发布入口；社区已有其他容器方案。
+
+**本仓库的区别**：打包未修改的官方 Release 二进制，核对压缩包 SHA-256，提供 amd64、arm64 镜像、Docker Hub/GHCR 分发，以及每日基础镜像刷新。配置只读挂载，签名解析器列表缓存使用独立可写数据卷，不修改上游协议或列表签名校验，详见[项目说明](dnscrypt-proxy/)。
+
+| 镜像仓库 | 地址 |
+| --- | --- |
+| [Docker Hub](https://hub.docker.com/r/aethersailor/dnscrypt-proxy) | `aethersailor/dnscrypt-proxy` |
+| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/dnscrypt-proxy) | `ghcr.io/aethersailor/dnscrypt-proxy` |
+
+**标签与架构**：`latest` 跟随最新打包的官方正式版，另提供 `2.1.20` 等上游版本标签；支持 Linux amd64、arm64。
+
+**🚀 使用**：准备 TOML 配置，按 [Compose 示例](dnscrypt-proxy/#使用)启动。容器以 `65532:65532` 运行，监听 `5353/tcp`、`5353/udp`，示例映射到宿主机回环地址的 `53` 端口；命名数据卷保存解析器列表缓存。首次启动需能下载列表并连接所选上游，不会修改宿主机 DNS 设置。
+
+**🔄 更新**：每天跟踪官方正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](dnscrypt-proxy/#更新与来源)。
+
+</details>
+
 ## 使用与更新
 
 使用前安装 Docker；使用 Compose 示例时，还需要 Docker Compose。展开所需项目，选择镜像地址和标签，再按对应文档准备配置、挂载目录和端口。代理规则、连接凭据和证书等配置需自行准备。

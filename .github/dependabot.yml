@@ -29,6 +29,13 @@ updates:
       prefix: build
       include: scope
   - package-ecosystem: docker
+    directory: /dnscrypt-proxy
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      include: scope
+  - package-ecosystem: docker
     directory: /wireproxy
     schedule:
       interval: weekly

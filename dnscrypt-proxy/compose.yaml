@@ -1,0 +1,13 @@
+services:
+  dnscrypt-proxy:
+    image: aethersailor/dnscrypt-proxy:latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:53:5353/tcp'
+      - '127.0.0.1:53:5353/udp'
+    volumes:
+      - ./dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml:ro
+      - dnscrypt-data:/var/lib/dnscrypt-proxy
+
+volumes:
+  dnscrypt-data:

@@ -1,0 +1,107 @@
+name: Build dnscrypt-proxy images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dnscrypt-proxy/**'
+      - '!dnscrypt-proxy/**/*.md'
+      - '!dnscrypt-proxy/**/README*'
+      - '!dnscrypt-proxy/docs/**'
+      - '.github/workflows/dnscrypt-proxy.yml'
+  schedule:
+    - cron: '53 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dnscrypt-proxy-publish
+  cancel-in-progress: false
+
+env:
+  GHCR_IMAGE: ghcr.io/aethersailor/dnscrypt-proxy
+  DOCKERHUB_IMAGE: docker.io/aethersailor/dnscrypt-proxy
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare official binaries
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 dnscrypt-proxy/scripts/prepare.py
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        with:
+          platforms: arm64
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and publish
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: ./dnscrypt-proxy
+          platforms: linux/amd64,linux/arm64
+          push: true
+          pull: true
+          no-cache: true
+          provenance: false
+          sbom: false
+          tags: |
+            ${{ env.GHCR_IMAGE }}:latest
+            ${{ env.GHCR_IMAGE }}:${{ steps.upstream.outputs.version }}
+            ${{ env.DOCKERHUB_IMAGE }}:latest
+            ${{ env.DOCKERHUB_IMAGE }}:${{ steps.upstream.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=dnscrypt-proxy
+            org.opencontainers.image.description=Unmodified official dnscrypt-proxy binaries
+            org.opencontainers.image.source=https://github.com/Aethersailor/container-forge
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.upstream.outputs.version }}
+            org.opencontainers.image.licenses=ISC
+            io.container-forge.upstream.source=https://github.com/DNSCrypt/dnscrypt-proxy
+            io.container-forge.upstream.revision=${{ steps.upstream.outputs.revision }}
+      - name: Verify published digests
+        env:
+          EXPECTED_DIGEST: ${{ steps.build.outputs.digest }}
+          VERSION: ${{ steps.upstream.outputs.version }}
+        run: |
+          set -euo pipefail
+          for image in "$GHCR_IMAGE" "$DOCKERHUB_IMAGE"; do
+            for tag in latest "$VERSION"; do
+              manifest="$(docker buildx imagetools inspect "$image:$tag" --format '{{json .Manifest}}')"
+              digest="$(jq -er '.digest' <<< "$manifest")"
+              if [[ "$digest" != "$EXPECTED_DIGEST" ]]; then
+                echo "Digest mismatch for $image:$tag: $digest != $EXPECTED_DIGEST" >&2
+                exit 1
+              fi
+              echo "$image:$tag digest verified: $digest"
+            done
+          done
+          {
+            echo '### dnscrypt-proxy'
+            echo "Version: \`$VERSION\`"
+            echo "Platforms: linux/amd64, linux/arm64"
+            echo "Digest: \`$EXPECTED_DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"

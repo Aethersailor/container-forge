@@ -1,0 +1,28 @@
+listen_addresses = ['0.0.0.0:5353']
+
+ipv4_servers = true
+ipv6_servers = false
+dnscrypt_servers = true
+doh_servers = true
+
+require_dnssec = false
+require_nolog = true
+require_nofilter = true
+
+use_syslog = false
+cache = true
+
+# Plain DNS is only used for initial bootstrap; application queries use encrypted resolvers.
+bootstrap_resolvers = ['9.9.9.11:53', '8.8.8.8:53']
+ignore_system_dns = true
+
+[sources.public-resolvers]
+urls = [
+  'https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md',
+  'https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md',
+  'https://cdn.jsdelivr.net/gh/DNSCrypt/dnscrypt-resolvers@master/v3/public-resolvers.md'
+]
+cache_file = '/var/lib/dnscrypt-proxy/public-resolvers.md'
+minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+refresh_delay = 73
+prefix = ''
