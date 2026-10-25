@@ -122,7 +122,7 @@ docker compose pull
 docker compose up -d
 ```
 
-每 6 小时检查官方 Release 和镜像 digest，已同步的历史版本也会检查同版本更新。官方重新发布镜像时，跟随新的 digest 原样同步；官方撤回 Release 或移除版本镜像时，对应版本也会撤下，`latest` 回退至仍可用的官方正式版。已拉取到本地的镜像不受影响。
+每天北京时间 08:17 检查官方 Release 和镜像 digest，已同步的历史版本也会检查同版本更新。官方重新发布镜像时，跟随新的 digest 原样同步；官方撤回 Release 或移除版本镜像时，对应版本也会撤下，`latest` 回退至仍可用的官方正式版。已拉取到本地的镜像不受影响。
 
 定时执行可能延迟，记录见[同步工作流](https://github.com/Aethersailor/container-forge/actions/workflows/frp.yml)。镜像更新后，已运行的容器仍需自行更新，也可按需使用 Watchtower 等工具。
 

@@ -10,8 +10,8 @@ on:
       - '!mihomo/docs/**'
       - '.github/workflows/mihomo.yml'
   schedule:
-    - cron: '17,47 * * * *'
     - cron: '23 3 * * *'
+    - cron: '23 15 * * *'
   workflow_dispatch:
     inputs:
       channel:

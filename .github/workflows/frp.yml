@@ -2,7 +2,7 @@ name: Sync official FRP images
 
 on:
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '17 0 * * *'
   workflow_dispatch:
   push:
     branches: [main]

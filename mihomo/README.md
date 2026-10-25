@@ -92,7 +92,7 @@ docker compose pull
 docker compose up -d
 ```
 
-每 30 分钟检查官方正式版和 Alpha；每天北京时间 11:23 额外完整重建两个通道，刷新基础镜像和系统包，即使核心版本未变也会重建。定时执行可能延迟，记录见 [发布工作流](https://github.com/Aethersailor/container-forge/actions/workflows/mihomo.yml)。更新已发布的镜像不会自动替换正在运行的容器。
+每天北京时间 11:23、23:23 检查官方正式版和 Alpha。其中 11:23 完整重建两个通道，刷新基础镜像和系统包，即使核心版本未变也会重建；23:23 在上游或打包输入变化时发布，没有变化则跳过构建。定时执行可能延迟，记录见 [发布工作流](https://github.com/Aethersailor/container-forge/actions/workflows/mihomo.yml)。更新已发布的镜像不会自动替换正在运行的容器。
 
 官方撤回版本后，会移除对应标签，并让 `latest` 回退至官方当前正式版；已拉取到本地的镜像不受影响。首次同步从当前版本开始，不回填全部历史版本，使用指定版本前请确认标签存在。
 
