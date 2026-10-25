@@ -48,6 +48,7 @@ def http(method, url, token=None, payload=None, missing=False, accept="applicati
                 time.sleep(attempt + 1)
                 continue
             raise RuntimeError(f"{method} {url}: network request failed") from None
+    raise RuntimeError(f"{method} {url}: request retries exhausted")
 
 
 def github_pages(url, token, missing=False):
