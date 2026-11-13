@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!LICENSE
-!patches/
-!patches/**
-!scripts/
-!scripts/build-wireproxy.sh

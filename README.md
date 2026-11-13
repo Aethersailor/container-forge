@@ -1,10 +1,6 @@
 # 🐳 Container Forge · 容器镜像工坊
 
-Container Forge 收纳社区维护的容器镜像打包与分发项目，为软件补齐容器部署、多架构支持或镜像分发能力。镜像发布到 Docker Hub 和 GitHub Container Registry（GHCR），可直接通过 Docker 或 Docker Compose 使用，无需克隆本仓库或自行构建。
-
-打包内容会持续扩充，也会为官方尚未提供 Docker 镜像的软件增加社区打包。已发布的项目见下方镜像目录。
-
-本仓库由社区独立维护，与上游项目无隶属关系。每个项目分别说明用途、官方镜像情况、本仓库的差异和使用方式。
+Container Forge 是社区容器镜像索引，收录为上游软件提供容器部署、多架构支持或镜像分发的项目。各项目在独立仓库维护，继续发布到原有的 Docker Hub 和 GitHub Container Registry（GHCR）地址。已有 Docker 或 Compose 配置可继续使用原镜像地址和标签。
 
 [📦 镜像目录](#镜像目录) · [🚀 使用与更新](#使用与更新) · [💬 问题反馈](#问题反馈)
 
@@ -15,11 +11,13 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 <details>
 <summary><strong>🌐 mihomo · 代理核心与规则路由</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/mihomo-docker) · [问题反馈](https://github.com/Aethersailor/mihomo-docker/issues)
+
 **用途**：通过容器部署 mihomo 代理核心，按配置中的节点和规则处理应用流量。
 
 **官方镜像**：已有 [`metacubex/mihomo`](https://hub.docker.com/r/metacubex/mihomo)。官方当前仅提供 amd64 v1 指令等级的镜像。
 
-**本仓库的区别**：直接打包未修改的官方正式版和 Alpha 二进制。`latest` 同时包含 amd64 v1/v2/v3，支持指令等级匹配的 Docker 会自动选择 CPU 支持的最高等级，无需手动选择。另提供固定等级标签、GHCR 分发和每日基础镜像刷新；核心功能、配置目录和启动参数沿用官方镜像。详细来源和对比见[项目说明](mihomo/#与官方镜像的区别)。
+**社区镜像的区别**：直接打包未修改的官方正式版和 Alpha 二进制。`latest` 同时包含 amd64 v1/v2/v3，支持指令等级匹配的 Docker 会自动选择 CPU 支持的最高等级，无需手动选择。另提供固定等级标签、GHCR 分发和每日基础镜像刷新；核心功能、配置目录和启动参数沿用官方镜像。详细来源和对比见[项目说明](https://github.com/Aethersailor/mihomo-docker#与官方镜像的区别)。
 
 | 镜像仓库 | 地址 |
 | --- | --- |
@@ -31,20 +29,22 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 - `latest`：最新正式版；`Alpha`：最新 Alpha，注意大写 `A`；`v1.x.x`：已同步的指定正式版。
 - 支持 Linux amd64 v1/v2/v3、386、arm64、arm/v7。固定指令等级可使用 `latest-amd64-v1`、`latest-amd64-v2`、`latest-amd64-v3`，Alpha 和版本标签也有对应后缀；所选等级须由 CPU 支持。
 
-**🚀 使用**：准备 `config.yaml`，按 [Compose 部署示例](mihomo/#使用)启动。普通代理端口、TUN 和透明代理的配置要求见项目文档及 [mihomo 官方文档](https://wiki.metacubex.one/)。
+**🚀 使用**：准备 `config.yaml`，按 [Compose 部署示例](https://github.com/Aethersailor/mihomo-docker#使用)启动。普通代理端口、TUN 和透明代理的配置要求见项目文档及 [mihomo 官方文档](https://wiki.metacubex.one/)。
 
-**🔄 更新**：每天北京时间 11:23、23:23 检查正式版和 Alpha，其中 11:23 完整重建以刷新基础镜像和系统包，23:23 有变化时发布。官方撤回版本后会移除对应标签，并调整 `latest`；首次同步不回填全部历史版本，详见[更新说明](mihomo/#更新镜像)。
+**🔄 更新**：每天北京时间 11:23、23:23 检查正式版和 Alpha，其中 11:23 完整重建以刷新基础镜像和系统包，23:23 有变化时发布。官方撤回版本后会移除对应标签，并调整 `latest`；首次同步不回填全部历史版本，详见[更新说明](https://github.com/Aethersailor/mihomo-docker#更新镜像)。
 
 </details>
 
 <details>
 <summary><strong>🔌 FRP · 内网穿透客户端与服务端</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/frp-image-sync) · [问题反馈](https://github.com/Aethersailor/frp-image-sync/issues)
+
 **用途**：通过具有公网地址的 frps 服务端访问内网服务；frpc 客户端部署在能够访问目标内网服务的设备上。
 
 **官方镜像**：已有 Docker Hub 的 [`fatedier/frpc`](https://hub.docker.com/r/fatedier/frpc)、[`fatedier/frps`](https://hub.docker.com/r/fatedier/frps)，以及 `ghcr.io/fatedier/frpc`、`ghcr.io/fatedier/frps`。官方目前按版本号发布，未提供滚动的 `latest` 标签；使用 Watchtower 跟随新正式版时，仍需自行调整版本标签，不便直接自动升级。
 
-**本仓库的区别**：从官方 GHCR 按 digest 原样复制，保留镜像内容和完整多架构清单，维护跟随正式版的 `latest` 标签，便于配合 Watchtower 自动更新容器。不重新构建或修改 FRP，没有额外的协议、配置项或性能补丁。详细来源和对比见[项目说明](frp/#与官方镜像的区别)。
+**社区镜像的区别**：从官方 GHCR 按 digest 原样复制，保留镜像内容和完整多架构清单，维护跟随正式版的 `latest` 标签，便于配合 Watchtower 自动更新容器。不重新构建或修改 FRP，没有额外的协议、配置项或性能补丁。详细来源和对比见[项目说明](https://github.com/Aethersailor/frp-image-sync#与官方镜像的区别)。
 
 | 组件 | Docker Hub | GHCR |
 | --- | --- | --- |
@@ -56,20 +56,22 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 - `latest`：当前可用的官方最新正式版；`vX.Y.Z`：已同步的指定版本。
 - 保留官方镜像的完整多架构清单，具体 Linux 平台见对应镜像标签。
 
-**🚀 使用**：按[配置与 Compose 示例](frp/#使用)分别部署 frps 和 frpc，准备认证信息、配置文件及端口映射。已有 FRP 容器部署可替换对应镜像地址，保留配置和参数。其他用法见 [FRP 官方文档](https://gofrp.org/zh-cn/docs/)。
+**🚀 使用**：按[配置与 Compose 示例](https://github.com/Aethersailor/frp-image-sync#使用)分别部署 frps 和 frpc，准备认证信息、配置文件及端口映射。已有 FRP 容器部署可替换对应镜像地址，保留配置和参数。其他用法见 [FRP 官方文档](https://gofrp.org/zh-cn/docs/)。
 
-**🔄 更新**：每天北京时间 08:17 检查官方版本和镜像 digest，已同步的历史版本也会跟随同版本重发。官方撤回版本时会同步撤下对应标签，并调整 `latest`，详见[更新说明](frp/#更新镜像)。原样同步有检查间隔，不保证与官方同时更新。
+**🔄 更新**：每天北京时间 08:17 检查官方版本和镜像 digest，已同步的历史版本也会跟随同版本重发。官方撤回版本时会同步撤下对应标签，并调整 `latest`，详见[更新说明](https://github.com/Aethersailor/frp-image-sync#更新镜像)。原样同步有检查间隔，不保证与官方同时更新。
 
 </details>
 
 <details>
 <summary><strong>📜 rsyslog-min-gtls · 精简网络日志接收服务</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/rsyslog-min-gtls) · [问题反馈](https://github.com/Aethersailor/rsyslog-min-gtls/issues)
+
 **用途**：集中接收 TCP/UDP syslog 日志，或配合自备配置与证书使用 TLS/mTLS。
 
 **官方镜像**：已有 [`rsyslog/rsyslog`](https://hub.docker.com/r/rsyslog/rsyslog)、[`rsyslog/rsyslog-minimal`](https://hub.docker.com/r/rsyslog/rsyslog-minimal)、[`rsyslog/rsyslog-collector`](https://hub.docker.com/r/rsyslog/rsyslog-collector) 等[官方镜像](https://docs.rsyslog.com/doc/containers/user_images.html)。官方 collector 同样支持可选的 TLS 接收。
 
-**本仓库的区别**：采用 Debian stable-slim 和源码编译，运行镜像仅保留网络日志输入及 GnuTLS 等所需模块，默认监听 TCP/UDP 1514 并输出到 stdout。官方镜像系列采用 Ubuntu LTS 和软件包安装，模块组合、默认端口和配置方式不同。详细对比及模块清单见[项目说明](rsyslog-min-gtls/#与官方镜像的区别)。
+**社区镜像的区别**：采用 Debian stable-slim 和源码编译，运行镜像仅保留网络日志输入及 GnuTLS 等所需模块，默认监听 TCP/UDP 1514 并输出到 stdout。官方镜像系列采用 Ubuntu LTS 和软件包安装，模块组合、默认端口和配置方式不同。详细对比及模块清单见[项目说明](https://github.com/Aethersailor/rsyslog-min-gtls#与官方镜像的区别)。
 
 | 镜像仓库 | 地址 |
 | --- | --- |
@@ -81,20 +83,22 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 - `latest`：最新构建的 rsyslog v8；`v8.x.y`：已发布的指定版本。
 - 支持 Linux amd64。
 
-**🚀 使用**：按[快速开始](rsyslog-min-gtls/#快速开始)或 [Compose 示例](rsyslog-min-gtls/#使用-docker-compose)启动。默认接收明文日志；启用 TLS/mTLS 需要挂载自己的配置和证书。使用自定义配置前需核对内置模块，本镜像不提供官方 collector 的环境变量开关，详见[配置说明](rsyslog-min-gtls/#自定义配置与-tlsmtls)。
+**🚀 使用**：按[快速开始](https://github.com/Aethersailor/rsyslog-min-gtls#快速开始)或 [Compose 示例](https://github.com/Aethersailor/rsyslog-min-gtls#使用-docker-compose)启动。默认接收明文日志；启用 TLS/mTLS 需要挂载自己的配置和证书。使用自定义配置前需核对内置模块，本镜像不提供官方 collector 的环境变量开关，详见[配置说明](https://github.com/Aethersailor/rsyslog-min-gtls#自定义配置与-tlsmtls)。
 
-**🔄 更新**：每天跟踪最新 rsyslog v8 并完整重建，刷新基础镜像和系统包，详见[更新说明](rsyslog-min-gtls/#更新镜像)。
+**🔄 更新**：每天跟踪最新 rsyslog v8 并完整重建，刷新基础镜像和系统包，详见[更新说明](https://github.com/Aethersailor/rsyslog-min-gtls#更新镜像)。
 
 </details>
 
 <details>
 <summary><strong>🔐 wireproxy · 用户态 WireGuard 代理</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/wireproxy-patched) · [问题反馈](https://github.com/Aethersailor/wireproxy-patched/issues)
+
 **用途**：将 WireGuard 连接提供为 SOCKS5、HTTP 代理或隧道，让指定应用经 WireGuard 出站。
 
 **官方镜像**：已有 [`ghcr.io/windtf/wireproxy`](https://github.com/windtf/wireproxy/pkgs/container/wireproxy)，官方的 `latest` 同样跟随上游 `master` 开发分支。
 
-**本仓库的区别**：在上游 `master` 基础上应用指定的队列扩容和 Landlock 补丁，使用 Alpine 运行镜像，提供 Docker Hub 分发和每日完整重建。官方使用 Distroless nonroot；非 root 和用户态代理是共同能力。详细对比见[项目说明](wireproxy/#与官方镜像的区别)。
+**社区镜像的区别**：在上游 `master` 基础上应用指定的队列扩容和 Landlock 补丁，使用 Alpine 运行镜像，提供 Docker Hub 分发和每日完整重建。官方使用 Distroless nonroot；非 root 和用户态代理是共同能力。详细对比见[项目说明](https://github.com/Aethersailor/wireproxy-patched#与官方镜像的区别)。
 
 | 镜像仓库 | 地址 |
 | --- | --- |
@@ -106,60 +110,66 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 - `latest`：上游 `master` 加本仓库补丁，不代表官方正式 Release。
 - 支持 Linux amd64、arm64。
 
-**🚀 使用**：准备可用的 WireGuard/wireproxy 配置，按 [Compose 部署示例](wireproxy/#使用)启动。镜像以 `65532:65532` 运行，配置需允许该用户读取；纯用户态代理不需要 TUN 设备、特权模式或 `NET_ADMIN`。
+**🚀 使用**：准备可用的 WireGuard/wireproxy 配置，按 [Compose 部署示例](https://github.com/Aethersailor/wireproxy-patched#使用)启动。镜像以 `65532:65532` 运行，配置需允许该用户读取；纯用户态代理不需要 TUN 设备、特权模式或 `NET_ADMIN`。
 
-队列扩容会增加积压时的内存需求和排队延迟，不保证吞吐提升，也不代表同等数量的并发连接，详见[补丁说明](wireproxy/#补丁范围)。
+队列扩容会增加积压时的内存需求和排队延迟，不保证吞吐提升，也不代表同等数量的并发连接，详见[补丁说明](https://github.com/Aethersailor/wireproxy-patched#补丁范围)。
 
-**🔄 更新**：每天跟踪最新 `master` 并完整重建，刷新基础镜像和系统包。版本和构建来源的查看方法见[更新说明](wireproxy/#更新镜像与查看版本)。
+**🔄 更新**：每天跟踪最新 `master` 并完整重建，刷新基础镜像和系统包。版本和构建来源的查看方法见[更新说明](https://github.com/Aethersailor/wireproxy-patched#更新镜像与查看版本)。
 
 </details>
 
 <details>
 <summary><strong>🧦 HEV SOCKS5 Server · 轻量 SOCKS5 服务端</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/hev-socks5-server) · [问题反馈](https://github.com/Aethersailor/hev-socks5-server/issues)
+
 **用途**：独立部署支持 TCP、UDP 和用户名密码认证的 SOCKS5 代理服务。
 
 **上游容器情况**：上游提供 [Dockerfile 和自行构建说明](https://github.com/heiher/hev-socks5-server/tree/main/docker)，当前构建流程主要交付各平台二进制，未见现成运行镜像的发布入口。
 
-**本仓库的区别**：直接打包未修改的官方正式 Release 二进制，核对上游 SHA-256，提供 amd64、arm64 镜像及每日基础镜像刷新。使用原生 YAML 配置，不修改上游协议或认证逻辑，详见[项目说明](hev-socks5-server/)。
+**社区镜像的区别**：直接打包未修改的官方正式 Release 二进制，核对上游 SHA-256，提供 amd64、arm64 镜像及每日基础镜像刷新。使用原生 YAML 配置，不修改上游协议或认证逻辑，详见[项目说明](https://github.com/Aethersailor/hev-socks5-server)。
 
 | 镜像仓库 | 地址 |
 | --- | --- |
 | [Docker Hub](https://hub.docker.com/r/aethersailor/hev-socks5-server) | `aethersailor/hev-socks5-server` |
-| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/hev-socks5-server) | `ghcr.io/aethersailor/hev-socks5-server` |
+| [GHCR](https://github.com/users/Aethersailor/packages/container/package/hev-socks5-server) | `ghcr.io/aethersailor/hev-socks5-server` |
 
 **标签与架构**：`latest` 跟随最新打包的官方正式版，另提供 `2.13.1` 等上游版本标签；支持 Linux amd64、arm64。
 
-**🚀 使用**：准备自己的账号密码和 YAML 配置，按 [Compose 示例](hev-socks5-server/#使用)启动。示例使用 Linux host 网络并以 `65532:65532` 运行，不需要特权模式或 TUN；UDP 端口与 bridge 网络的配置要求见[UDP 说明](hev-socks5-server/#udp-与端口映射)。
+**🚀 使用**：准备自己的账号密码和 YAML 配置，按 [Compose 示例](https://github.com/Aethersailor/hev-socks5-server#使用)启动。示例使用 Linux host 网络并以 `65532:65532` 运行，不需要特权模式或 TUN；UDP 端口与 bridge 网络的配置要求见[UDP 说明](https://github.com/Aethersailor/hev-socks5-server#udp-与端口映射)。
 
-**🔄 更新**：每天跟踪官方最新正式 Release 并完整重建，刷新基础镜像和系统包；来源记录随镜像提供，详见[更新说明](hev-socks5-server/#更新与来源)。
+**🔄 更新**：每天跟踪官方最新正式 Release 并完整重建，刷新基础镜像和系统包；来源记录随镜像提供，详见[更新说明](https://github.com/Aethersailor/hev-socks5-server#更新与来源)。
 
 </details>
 
 <details>
 <summary><strong>🔒 dnscrypt-proxy · 加密 DNS 转发</strong></summary>
 
+[维护仓库](https://github.com/Aethersailor/dnscrypt-proxy) · [问题反馈](https://github.com/Aethersailor/dnscrypt-proxy/issues)
+
 **用途**：通过 DNSCrypt、DoH 等协议连接加密 DNS 上游，向客户端提供普通 UDP/TCP DNS 接口和本地缓存。
 
 **上游容器情况**：上游 [DNSCrypt/dnscrypt-proxy](https://github.com/DNSCrypt/dnscrypt-proxy) 交付源码和多平台正式二进制，本次核对的发布流程未见公开运行镜像的发布入口；社区已有其他容器方案。
 
-**本仓库的区别**：打包未修改的官方 Release 二进制，核对压缩包 SHA-256，提供 amd64、arm64 镜像、Docker Hub/GHCR 分发，以及每日基础镜像刷新。配置只读挂载，签名解析器列表缓存使用独立可写数据卷，不修改上游协议或列表签名校验，详见[项目说明](dnscrypt-proxy/)。
+**社区镜像的区别**：打包未修改的官方 Release 二进制，核对压缩包 SHA-256，提供 amd64、arm64 镜像、Docker Hub/GHCR 分发，以及每日基础镜像刷新。配置只读挂载，签名解析器列表缓存使用独立可写数据卷，不修改上游协议或列表签名校验，详见[项目说明](https://github.com/Aethersailor/dnscrypt-proxy)。
 
 | 镜像仓库 | 地址 |
 | --- | --- |
 | [Docker Hub](https://hub.docker.com/r/aethersailor/dnscrypt-proxy) | `aethersailor/dnscrypt-proxy` |
-| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/dnscrypt-proxy) | `ghcr.io/aethersailor/dnscrypt-proxy` |
+| [GHCR](https://github.com/users/Aethersailor/packages/container/package/dnscrypt-proxy) | `ghcr.io/aethersailor/dnscrypt-proxy` |
 
 **标签与架构**：`latest` 跟随最新打包的官方正式版，另提供 `2.1.20` 等上游版本标签；支持 Linux amd64、arm64。
 
-**🚀 使用**：准备 TOML 配置，按 [Compose 示例](dnscrypt-proxy/#使用)启动。容器以 `65532:65532` 运行，监听 `5353/tcp`、`5353/udp`，示例映射到宿主机回环地址的 `53` 端口；命名数据卷保存解析器列表缓存。首次启动需能下载列表并连接所选上游，不会修改宿主机 DNS 设置。
+**🚀 使用**：准备 TOML 配置，按 [Compose 示例](https://github.com/Aethersailor/dnscrypt-proxy#使用)启动。容器以 `65532:65532` 运行，监听 `5353/tcp`、`5353/udp`，示例映射到宿主机回环地址的 `53` 端口；命名数据卷保存解析器列表缓存。首次启动需能下载列表并连接所选上游，不会修改宿主机 DNS 设置。
 
-**🔄 更新**：每天跟踪官方正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](dnscrypt-proxy/#更新与来源)。
+**🔄 更新**：每天跟踪官方正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](https://github.com/Aethersailor/dnscrypt-proxy#更新与来源)。
 
 </details>
 
 <details>
 <summary>🗄️ restic-rclone · 加密备份与云存储后端</summary>
+
+[维护仓库](https://github.com/Aethersailor/restic-rclone) · [问题反馈](https://github.com/Aethersailor/restic-rclone/issues)
 
 将 restic 和 rclone 放在同一容器中，通过 restic 原生的 `rclone:` 后端，把加密、去重后的快照写入 rclone remote。
 
@@ -168,13 +178,13 @@ Container Forge 收纳社区维护的容器镜像打包与分发项目，为软�
 | 镜像仓库 | 地址 |
 | --- | --- |
 | [Docker Hub](https://hub.docker.com/r/aethersailor/restic-rclone) | `aethersailor/restic-rclone` |
-| [GHCR](https://github.com/Aethersailor/container-forge/pkgs/container/restic-rclone) | `ghcr.io/aethersailor/restic-rclone` |
+| [GHCR](https://github.com/users/Aethersailor/packages/container/package/restic-rclone) | `ghcr.io/aethersailor/restic-rclone` |
 
 **标签与架构**：`latest` 跟随最新正式版组合，另提供 `restic-0.19.1-rclone-1.75.2` 等组合标签；支持 Linux amd64、arm64。
 
-**🚀 使用**：准备 rclone remote、仓库密码和只读备份源，按 [Compose 示例](restic-rclone/#使用)运行初始化、备份、查看快照和恢复。restic 自行启停 rclone，无需端口或额外服务；备份调度由宿主机安排。
+**🚀 使用**：准备 rclone remote、仓库密码和只读备份源，按 [Compose 示例](https://github.com/Aethersailor/restic-rclone#使用)运行初始化、备份、查看快照和恢复。restic 自行启停 rclone，无需端口或额外服务；备份调度由宿主机安排。
 
-**🔄 更新**：每天北京时间 12:07 检查两者最新正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](restic-rclone/#更新与来源)。
+**🔄 更新**：每天北京时间 12:07 检查两者最新正式 Release 并完整重建，刷新基础镜像和系统包，详见[更新说明](https://github.com/Aethersailor/restic-rclone#更新与来源)。
 
 </details>
 
@@ -197,14 +207,12 @@ docker compose up -d
 
 版本标签可能因基础镜像刷新或上游同版本重发而更新。需要固定镜像内容时，使用对应镜像仓库中的 digest（`镜像地址@sha256:…`）。版本撤回不影响已拉取到本地的镜像，具体行为见各项目文档。
 
-定时任务的实际执行时间可能延迟，执行记录见 [GitHub Actions](https://github.com/Aethersailor/container-forge/actions)。镜像仓库发布更新后，已运行的容器仍需自行更新。
+定时任务的执行记录见各维护仓库的 GitHub Actions。镜像发布后，已运行的容器仍需自行更新。
 
 ## 问题反馈
 
-镜像拉取、标签、架构、容器启动或本仓库补丁的问题，可在 [Issues](https://github.com/Aethersailor/container-forge/issues) 反馈。请提供镜像地址与标签、宿主机架构、Docker 版本、启动命令或 Compose 配置，以及相关错误日志。提交前移除密码、Token、私钥等敏感信息。
-
-软件功能和配置用法可查阅对应项目文档中的上游入口。
+镜像拉取、标签、架构、容器启动或打包补丁的问题，请在镜像目录中打开对应项目的「问题反馈」。提交时请附上镜像地址与标签、宿主机架构、启动命令或 Compose 配置和错误日志，并移除密码、Token 和私钥。
 
 ## 维护与许可
 
-维护或新增镜像工程的约定见 [AGENTS.md](AGENTS.md)。各软件及打包文件遵循对应许可证，具体见各目录的 README 和许可证文件。
+打包源码、发布流程和许可证见各维护仓库。集中维护阶段的文件可从[拆分前的版本](https://github.com/Aethersailor/container-forge/tree/7eb2e50440e48f520b448100197071d64298adc2)查看。
