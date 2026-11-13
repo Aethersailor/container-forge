@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: '20 */6 * * *'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 100
+    cooldown:
+      default-days: 0
+    allow:
+      - dependency-type: all
+    groups:
+      github-actions:
+        patterns: ['*']
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
